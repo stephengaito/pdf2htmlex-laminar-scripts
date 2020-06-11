@@ -1,0 +1,107 @@
+#!/bin/bash -xe
+
+# This Laminar bash script automates the testing of pdf2htmlEX Docker images
+
+# The `DIST` environment variable is used to specify which Ubuntu release 
+# will be used. (The default is `bionic`).
+
+export LAMINAR_HOME=$PWD
+
+# Make sure that $WORKSPACE/$DIST exists BEFORE docker mounts it
+#
+mkdir -p $PWORKSPACE/$DIST
+
+source $PWORKSPACE/$DIST/reSourceVersionEnvs
+
+export PDF=/examples/pdfFiles/een_fietsenstalling_laten_opknappen.pdf
+export bgFormat=svg
+
+export WEBFSD_DIR=/workspace/webfsd/html/docker
+
+export PDF_PATH=$(echo $PDF | cut -d'.' -f1)
+export PDF_NAME=$(echo $PDF | cut -d'/' -f2 | cut -d'.' -f1)
+
+export PDF_BASE_DIR=$WEBFSD_DIR/$PDF_NAME
+
+echo mkdir $PWORKSPACE/..$PDF_BASE_DIR
+rm    -rf  $PWORKSPACE/..$PDF_BASE_DIR
+mkdir -p   $PWORKSPACE/..$PDF_BASE_DIR
+
+docker run --rm -i                                                \
+  -v $LAMINAR_HOME:/home/dev                                      \
+  --entrypoint /bin/bash                                          \
+  $DOCKER_NAME                                      <<DOCKER_SCRIPT
+#!/bin/bash
+
+set -ex 
+
+# Record the list of shared libraries in docker image
+#
+find / -iname "*.so.*"            \
+  | xargs -i basename {} | sed 's/\r//g' | sed 's/\(so\.[0-9]\+\).*$/\1/'     \
+  | sort | uniq > /home/dev/sharedLibraries
+#
+chown 4242:4242 /home/dev/sharedLibraries
+
+DOCKER_SCRIPT
+
+docker run --rm -i           \
+  -v $LAMINAR_HOME:/home/dev \
+  $DOCKER_FROM               <<BLACK_LIST_FILES
+set -ex
+
+find / -iname "*.so.*"            \
+  | xargs -i basename {} | sed 's/\r//g' | sed 's/\(so\.[0-9]\+\).*$/\1/'     \
+  | sort | uniq > /home/dev/blackListedFiles
+
+chown 4242:4242 /home/dev/blackListedFiles
+
+BLACK_LIST_FILES
+
+dumb-init -v docker run --rm -i                                   \
+  $DOCKER_NAME                                                    \
+  --version
+
+dumb-init -v docker run --rm -i                                   \
+  -v $PWD:/home/dev                                               \
+  -v $PWORKSPACE/$DIST:/workspace                                 \
+  -v $ARCHIVE:/archive                                            \
+  -v /home/dev/pdf2htmlexWork/examples:/examples:ro               \
+  -v /home/dev/pdf2htmlexWork/pdf2htmlEX/pdf2htmlEX/test:/test:ro \
+  $DOCKER_NAME                                                    \
+  --zoom 1.3                                                      \
+  --embed cfij --bg-format $bgFormat                              \
+  --split-pages 1                                                 \
+  --dest-dir $PDF_BASE_DIR                                        \
+  --page-filename $PDF_NAME-%d.page                               \
+  $PDF_PATH.pdf
+
+
+docker run --rm -i                                                \
+  -v $PWD:/home/dev                                               \
+  -v $PWORKSPACE/$DIST:/workspace                                 \
+  -v $ARCHIVE:/archive                                            \
+  -v /home/dev/pdf2htmlexWork/examples:/examples:ro               \
+  -v /home/dev/pdf2htmlexWork/pdf2htmlEX/pdf2htmlEX/test:/test:ro \
+  -u dev:dev                                                      \
+  -w /home/dev                                                    \
+  laminar_$DIST                                     <<DOCKER_SCRIPT
+#!/bin/bash
+
+set -xe
+
+# Record the fonts configuration
+#
+ls -la /etc
+ls -la /etc/fonts
+
+sudo cp -R /etc/fonts .
+sudo chown -R dev:dev fonts
+
+# Make sure the html output is owned by dev:dev
+#
+sudo chown -R dev:dev $PDF_BASE_DIR
+
+DOCKER_SCRIPT
+
+

@@ -4,9 +4,9 @@ This repository contains a collection of
 [Laminar](https://laminar.ohwg.net/) scripts and jobs which I use to build 
 / test / deploy the [pdf2htmlEX](https://github.com/pdf2htmlEX/pdf2htmlEX) 
 project (using my personal [development 
-fork](https://github.com/stephengaito/pdf2htmlEX)).It assumes that the
+fork](https://github.com/stephengaito/pdf2htmlEX)). It assumes that the
 'sister' [laminar-scripts](https://github.com/stephengaito/laminar-scripts)
-project has alreayd been installed. This project also, incedentally, 
+project has already been installed. This project also, incedentally, 
 provides another example of one developer's use of Laminar. 
 
 Again, the bash scripts used to control the over all build can be found in 

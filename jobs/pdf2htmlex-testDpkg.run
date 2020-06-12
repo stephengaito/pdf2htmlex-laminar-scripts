@@ -19,22 +19,17 @@ export bgFormat=svg
 export WEBFSD_DIR=/workspace/webfsd/html/dpkg
 
 export PDF_PATH=$(echo $PDF | cut -d'.' -f1)
-export PDF_NAME=$(echo $PDF | cut -d'/' -f2 | cut -d'.' -f1)
+export PDF_NAME=$(echo $PDF | cut -d'/' -f4 | cut -d'.' -f1)
 
 export PDF_BASE_DIR=$WEBFSD_DIR/$PDF_NAME
 
-#######################################################################
-# We start by creating the script used to control the docker image
+###########################################################################
+# We run the following DOCKER_SCRIPT inside the laminar_$DIST docker image 
+# as the dev user. 
 #
-docker run --rm -i                                                \
-  -v $PWD:/home/dev                                               \
-  -v $PWORKSPACE/$DIST:/workspace                                 \
-  -v $ARCHIVE:/archive                                            \
-  -v /home/dev/pdf2htmlexWork/examples:/examples:ro               \
-  -v /home/dev/pdf2htmlexWork/pdf2htmlEX/pdf2htmlEX/test:/test:ro \
-  -u dev:dev                                                      \
-  -w "/home/dev"                                                  \
-  laminar_$DIST                                     <<DOCKER_SCRIPT
+devDocker laminar_$DIST <<DOCKER_SCRIPT
+#!/bin/bash
+
 set -xe
 
 # This bash script is used *inside* a docker image to build pdf2htmlEX.

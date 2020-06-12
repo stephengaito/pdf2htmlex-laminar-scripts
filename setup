@@ -10,8 +10,4 @@ jobDir=$LAMINAR_HOME/cfg/jobs
 
 cp bin/startLaminarPdf2htmlEX $binDir
 
-cp jobs/buildPdf2htmlEX.run        $jobDir
-cp jobs/testPdf2htmlEX.run         $jobDir
-cp jobs/testPdf2htmlEXAppImage.run $jobDir
-cp jobs/testPdf2htmlEXDpkg.run     $jobDir
-cp jobs/testPdf2htmlEXDocker.run   $jobDir
+cp jobs/pdf2htmlex*           $jobDir

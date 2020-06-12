@@ -1,0 +1,104 @@
+#!/bin/bash -xe
+
+# This laminar run bash script automates the bulding, local installation, 
+# and creation of an AppImage, Debian archive and Docker image for a 
+# particular Ubuntu release.
+
+# The `DIST` environment variable is used to specify which Ubuntu release 
+# will be used. (The default is `bionic`).
+
+# The `REPO` environment variable is used to determine which pdf2htmlEX 
+# github repository to download and build. (The default is 
+# `stephengaito/pdf2htmlEX`). 
+
+# The `BRANCH` environment variable is used to determine which 
+# branch/tag/commit of pdf2htmlEX to download and build. (The defualt is 
+# `master`). 
+
+export LAMINAR_HOME=$PWD
+
+# Make sure that $WORKSPACE/$DIST exists BEFORE docker mounts it
+#
+mkdir -p $PWORKSPACE/$DIST
+
+# IF we have already been run and built everything... simply exit ;-)
+#
+if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
+  #
+  # Start the next stage...
+  #
+  laminarc queue pdf2htmlex-test DIST=$DIST
+  exit 0
+fi
+
+###########################################################################
+# We run the following DOCKER_SCRIPT inside the laminar_$DIST docker image 
+# as the dev user. 
+#
+devDocker laminar_$DIST <<DOCKER_SCRIPT
+#!/bin/bash
+
+set -xe
+
+# This bash script is used *inside* a docker image to build pdf2htmlEX.
+
+export DEBIAN_FRONTEND=noninteractive
+
+cd 
+
+git config --global user.name "Stephen Gaito"
+git config --global user.email "stephen@perceptisys.co.uk"
+
+# We meed to download pdf2htmlEX
+#
+git clone https://github.com/$REPO
+
+# Now we start the build process
+#
+cd pdf2htmlEX
+
+git checkout $BRANCH
+
+./buildScripts/buildInstallLocally
+
+export DOCKER_FROM=$DOCKER_FROM
+export DOCKER_USERNAME=$DOCKER_USERNAME
+
+./buildScripts/createAppImage  
+
+./buildScripts/createDebianPackage
+
+./buildScripts/createDockerImageInside
+
+# Finally we need to make sure Laminar can eventually clean up this mess...
+#
+sudo chown -R dev:dev /home/dev
+
+DOCKER_SCRIPT
+
+cd $LAMINAR_HOME
+
+cd pdf2htmlEX
+
+#######################################################################
+# Now run all build scripts which must be run *outside* of any docker 
+# container.
+#
+
+# In our case, we only have to run:
+#
+dumb-init -v ./buildScripts/createDockerImageOutside
+
+####################################################################
+# Now we copy the pdf2htmlex project release objects to the project 
+# workspace. 
+#
+source buildScripts/reSourceVersionEnvs
+
+cp imageBuild/$APPIMAGE_NAME        $PWORKSPACE/$DIST
+cp imageBuild/$DPKG_NAME            $PWORKSPACE/$DIST
+cp buildScripts/reSourceVersionEnvs $PWORKSPACE/$DIST
+
+# Start the next stage...
+#
+laminarc queue pdf2htmlex-test DIST=$DIST

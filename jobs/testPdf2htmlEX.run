@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# This Laminar bash script automates the testing of pdf2htmlEX
-
-laminarc queue testPdf2htmlEXAppImage DIST=$DIST PWORKSPACE=$PWORKSPACE
-
-laminarc queue testPdf2htmlEXDpkg     DIST=$DIST PWORKSPACE=$PWORKSPACE
-
-laminarc queue testPdf2htmlEXDocker   DIST=$DIST PWORKSPACE=$PWORKSPACE

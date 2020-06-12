@@ -3,15 +3,16 @@
 # This bash script starts an ordered collection of laminar jobs to build, 
 # test and potentially release pdf2htmlEX. 
 
-export BRANCH=${BRANCH:=updateBuildScripts}
-
-export PWORKSPACE=$HOME/laminar/tasks/workspaces/pdf2htmlEX
-
-mkdir -p $PWORKSPACE
+export LAMINAR_HOME=$HOME/laminar/tasks
+export PWORKSPACE=$LAMINAR_HOME/workspaces/pdf2htmlex
 
 # Start by building the pdf2htmlEX versions we want to test.
 #
-laminarc queue buildPdf2htmlEX DIST=bionic PWORKSPACE=$PWORKSPACE
+if test -f $PWORKSPACE/bionic/reSourceVersionEnvs ; then
+  laminarc queue pdf2htmlex-test DIST=bionic
+else
+  laminarc queue pdf2htmlex-build DIST=bionic
+fi
 
 #laminarc queue buildPdf2htmlEX DIST=eoan
 

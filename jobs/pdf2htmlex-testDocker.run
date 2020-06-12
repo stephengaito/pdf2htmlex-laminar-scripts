@@ -19,7 +19,7 @@ export bgFormat=svg
 export WEBFSD_DIR=/workspace/webfsd/html/docker
 
 export PDF_PATH=$(echo $PDF | cut -d'.' -f1)
-export PDF_NAME=$(echo $PDF | cut -d'/' -f2 | cut -d'.' -f1)
+export PDF_NAME=$(echo $PDF | cut -d'/' -f4 | cut -d'.' -f1)
 
 export PDF_BASE_DIR=$WEBFSD_DIR/$PDF_NAME
 
@@ -27,10 +27,9 @@ echo mkdir $PWORKSPACE/..$PDF_BASE_DIR
 rm    -rf  $PWORKSPACE/..$PDF_BASE_DIR
 mkdir -p   $PWORKSPACE/..$PDF_BASE_DIR
 
-docker run --rm -i                                                \
-  -v $LAMINAR_HOME:/home/dev                                      \
-  --entrypoint /bin/bash                                          \
-  $DOCKER_NAME                                      <<DOCKER_SCRIPT
+rootDocker               \
+  --entrypoint /bin/bash \
+  $DOCKER_NAME           <<DOCKER_SCRIPT
 #!/bin/bash
 
 set -ex 
@@ -45,9 +44,9 @@ chown 4242:4242 /home/dev/sharedLibraries
 
 DOCKER_SCRIPT
 
-docker run --rm -i           \
-  -v $LAMINAR_HOME:/home/dev \
-  $DOCKER_FROM               <<BLACK_LIST_FILES
+rootDocker $DOCKER_FROM <<BLACK_LIST_FILES
+#!/bin/bash
+
 set -ex
 
 find / -iname "*.so.*"            \
@@ -58,14 +57,9 @@ chown 4242:4242 /home/dev/blackListedFiles
 
 BLACK_LIST_FILES
 
-dumb-init -v docker run --rm -i                                   \
-  $DOCKER_NAME                                                    \
-  --version
+rootDocker $DOCKER_NAME --version
 
-dumb-init -v docker run --rm -i                                   \
-  -v $PWD:/home/dev                                               \
-  -v $PWORKSPACE/$DIST:/workspace                                 \
-  -v $ARCHIVE:/archive                                            \
+rootDocker                                                        \
   -v /home/dev/pdf2htmlexWork/examples:/examples:ro               \
   -v /home/dev/pdf2htmlexWork/pdf2htmlEX/pdf2htmlEX/test:/test:ro \
   $DOCKER_NAME                                                    \
@@ -77,15 +71,7 @@ dumb-init -v docker run --rm -i                                   \
   $PDF_PATH.pdf
 
 
-docker run --rm -i                                                \
-  -v $PWD:/home/dev                                               \
-  -v $PWORKSPACE/$DIST:/workspace                                 \
-  -v $ARCHIVE:/archive                                            \
-  -v /home/dev/pdf2htmlexWork/examples:/examples:ro               \
-  -v /home/dev/pdf2htmlexWork/pdf2htmlEX/pdf2htmlEX/test:/test:ro \
-  -u dev:dev                                                      \
-  -w /home/dev                                                    \
-  laminar_$DIST                                     <<DOCKER_SCRIPT
+devDocker laminar_$DIST <<DOCKER_SCRIPT
 #!/bin/bash
 
 set -xe
@@ -103,5 +89,3 @@ sudo chown -R dev:dev fonts
 sudo chown -R dev:dev $PDF_BASE_DIR
 
 DOCKER_SCRIPT
-
-

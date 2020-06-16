@@ -15,7 +15,7 @@
 # branch/tag/commit of pdf2htmlEX to download and build. (The defualt is 
 # `master`). 
 
-export LAMINAR_HOME=$PWD
+source setupLaminarVars
 
 # Make sure that $WORKSPACE/$DIST exists BEFORE docker mounts it
 #
@@ -31,54 +31,146 @@ if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
   exit 0
 fi
 
-###########################################################################
-# We run the following DOCKER_SCRIPT inside the laminar_$DIST docker image 
-# as the dev user. 
+########################################################################
+# Obtain the required git repositories (outside of any docker container)
 #
-devDocker laminar_$DIST <<DOCKER_SCRIPT
+
+# We meed to download pdf2htmlEX
+#
+git clone --depth=50 --branch=$BRANCH  https://github.com/$REPO
+
+cd $LAMINAR_RUNDIR/pdf2htmlEX
+
+# The following is required for the buildScripts/createDebianPackage
+# (we set it only for the pdf2htmlEX repository)
+#
+git config user.name "Stephen Gaito"
+git config user.email "stephen@perceptisys.co.uk"
+
+git checkout $BRANCH
+
+# Clone our (private) collection of PDF files for further testing
+# (it is OK if we can't)
+#
+cd $PWORKSPACE/$DIST
+mkdir -p examples
+if test -r $LAMINAR_HOME/cfg/tarArchives/pdf2htmlEX-examples.tar.gz ; then
+  tar xvf $LAMINAR_HOME/cfg/tarArchives/pdf2htmlEX-examples.tar.gz \
+    --directory=examples --strip-components=1
+fi
+  
+###########################################################################
+# Now do the build INSIDE inside a laminar_dev_$DIST docker image as the 
+# dev user. 
+#
+devDocker laminar_dev_$DIST <<DOCKER_SCRIPT
 #!/bin/bash
 
 set -xe
 
+source $LAMINAR_RUNDIR/reSourceLaminarVars
+
 # This bash script is used *inside* a docker image to build pdf2htmlEX.
 
-export DEBIAN_FRONTEND=noninteractive
+recordVar DEBIAN_FRONTEND noninteractive
 
-cd 
-
-git config --global user.name "Stephen Gaito"
-git config --global user.email "stephen@perceptisys.co.uk"
-
-# We meed to download pdf2htmlEX
-#
-git clone https://github.com/$REPO
+cd $LAMINAR_RUNDIR/pdf2htmlEX
 
 # Now we start the build process
 #
-cd pdf2htmlEX
-
-git checkout $BRANCH
-
 ./buildScripts/buildInstallLocally
 
-export DOCKER_FROM=$DOCKER_FROM
-export DOCKER_USERNAME=$DOCKER_USERNAME
-
-./buildScripts/createAppImage  
-
-./buildScripts/createDebianPackage
-
-./buildScripts/createDockerImageInside
-
-# Finally we need to make sure Laminar can eventually clean up this mess...
+# Now we need to make copies of the test data for use later...
 #
-sudo chown -R dev:dev /home/dev
+mkdir -p $PWORKSPACE/$DIST/appImage
+cp -R pdf2htmlEX/test               $PWORKSPACE/$DIST/appImage
+cp -R pdf2htmlEX/share              $PWORKSPACE/$DIST/appImage
+#
+mkdir -p $PWORKSPACE/$DIST/dpkg
+cp -R pdf2htmlEX/test               $PWORKSPACE/$DIST/dpkg
+cp -R pdf2htmlEX/share              $PWORKSPACE/$DIST/dpkg
+#
+mkdir -p $PWORKSPACE/$DIST/docker
+cp -R pdf2htmlEX/test               $PWORKSPACE/$DIST/docker
+cp -R pdf2htmlEX/share              $PWORKSPACE/$DIST/docker
+#
+mkdir -p $PWORKSPACE/$DIST/native
+cp -R pdf2htmlEX/test               $PWORKSPACE/$DIST/native
+cp -R pdf2htmlEX/share              $PWORKSPACE/$DIST/native
+
+# Now we create the release artifacts
+# (starting with those we can put together inside a docker container)
+#
+recordVar DOCKER_FROM $DOCKER_FROM
+recordVar DOCKER_USERNAME $DOCKER_USERNAME
+
+acceptResult ./buildScripts/createAppImage  
+acceptResult ./buildScripts/createDebianPackage
+accetpResult ./buildScripts/createDockerImageInside
+
+# Make sure that Laminar (run as dev) can eventually clean up...
+# (the debian packaging chown to "root")
+#
+sudo chown -R dev:dev $LAMINAR_RUNDIR
+
+# Now we want to run the native tests (we do this AFTER creating the 
+# artifacts so we do not polute the installed packages). 
+#
+cd $PWORKSPACE/$DIST/native/test
+
+recordVar PDF2HTMLEX_PATH   /usr/local/bin/pdf2htmlEX
+recordVar PDF2HTMLEX_TMPDIR /tmp/pdf2htmlEX/tmp
+recordVar PDF2HTMLEX_DATDIR /tmp/pdf2htmlEX/dat
+recordVar PDF2HTMLEX_PNGDIR /tmp/pdf2htmlEX/png
+recordVar PDF2HTMLEX_OUTDIR /tmp/pdf2htmlEX/out
+recordVar PDF2HTMLEX_PREDIR /tmp/pdf2htmlEX/pre
+recordVar PDF2HTMLEX_HTMDIR /tmp/pdf2htmlEX/html
+recordVar PDF2HTMLEX_EXPDIR /tmp/pdf2htmlEX/examples
+
+mkdir -p \$PDF2HTMLEX_TMPDIR
+mkdir -p \$PDF2HTMLEX_DATDIR
+mkdir -p \$PDF2HTMLEX_PNGDIR
+mkdir -p \$PDF2HTMLEX_OUTDIR
+mkdir -p \$PDF2HTMLEX_PREDIR
+mkdir -p \$PDF2HTMLEX_HTMDIR
+mkdir -p \$PDF2HTMLEX_EXPDIR
+
+recordVar WEBFSD_DIR=$PWORKSPACE/html/$DIST/native
+mkdir -p \$WEBFSD_DIR
+
+acceptResult ./runLocalTestsBash
+
+if test -x $PWORKSPACE/$DIST/examples/binFiles/produceHtmlFromPdfFiles ; then
+  pushd $PWORKSPACE/$DIST/examples
+  acceptResult ./binFiles/produceHtmlFromPdfFiles
+  cp -R \$PDF2HTMLEX_EXPDIR \$WEBFSD_DIR
+  popd
+fi
+
+acceptResult ./produceHtmlForBrowserTests
+
+./installAutomaticTestSoftware
+
+cp test.py.in test.py
+sed 's:@PDF2HTMLEX_PATH@:\$PDF2HTMLEX_PATH:'     -i test.py
+sed 's:@PDF2HTMLEX_TMPDIR@:\$PDF2HTMLEX_TMPDIR:' -i test.py
+sed 's:@PDF2HTMLEX_DATDIR@:\$PDF2HTMLEX_DATDIR:' -i test.py
+sed 's:@PDF2HTMLEX_PNGDIR@:\$PDF2HTMLEX_PNGDIR:' -i test.py
+sed 's:@PDF2HTMLEX_OUTDIR@:\$PDF2HTMLEX_OUTDIR:' -i test.py
+sed 's:@PDF2HTMLEX_PREDIR@:\$PDF2HTMLEX_PREDIR:' -i test.py
+sed 's:@PDF2HTMLEX_HTMDIR@:\$PDF2HTMLEX_HTMDIR:' -i test.py
+
+acceptResult ./runLocalBrowserTests
+
+recordVar BROWSER_TEST_DIR \$WEBFSD_DIR/browserTests
+mkdir -p \$BROWSER_TEST_DIR/pdfFiles
+cp -R \$PDF2HTMLEX_HTMDIR \$BROWSER_TEST_DIR
+cp -R \$PDF2HTMLEX_PNGDIR \$BROWSER_TEST_DIR
+cp -R browser_tests/*.pdf \$BROWSER_TEST_DIR/pdfFiles
+
+reportResults
 
 DOCKER_SCRIPT
-
-cd $LAMINAR_HOME
-
-cd pdf2htmlEX
 
 #######################################################################
 # Now run all build scripts which must be run *outside* of any docker 
@@ -87,17 +179,25 @@ cd pdf2htmlEX
 
 # In our case, we only have to run:
 #
-dumb-init -v ./buildScripts/createDockerImageOutside
+cd $LAMINAR_RUNDIR/pdf2htmlEX
+acceptResults dumb-init -v ./buildScripts/createDockerImageOutside
 
-####################################################################
-# Now we copy the pdf2htmlex project release objects to the project 
-# workspace. 
+#########################################################################
+# Now we copy the pdf2htmlex project release/test objects/directories to 
+# the project workspace. 
 #
+
+cd $LAMINAR_RUNDIR/pdf2htmlEX
 source buildScripts/reSourceVersionEnvs
 
 cp imageBuild/$APPIMAGE_NAME        $PWORKSPACE/$DIST
 cp imageBuild/$DPKG_NAME            $PWORKSPACE/$DIST
+
+# and lastly copy the marker we use to skip re-building
+#
 cp buildScripts/reSourceVersionEnvs $PWORKSPACE/$DIST
+
+reportResults
 
 # Start the next stage...
 #

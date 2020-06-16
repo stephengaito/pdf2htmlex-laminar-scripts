@@ -8,6 +8,11 @@ binDir=$HOME/bin
 
 jobDir=$LAMINAR_HOME/cfg/jobs
 
-cp bin/startLaminarPdf2htmlEX $binDir
+tarDir=$LAMINAR_HOME/cfg/tarArchives
+mkdir -p $tarDir
 
-cp jobs/pdf2htmlex*           $jobDir
+cp bin/startLaminar*                        $binDir
+
+cp jobs/pdf2htmlex*                         $jobDir
+
+cp tarArchives/pdf2htmlEX-examples-*.tar.gz $tarDir/pdf2htmlEX-examples.tar.gz

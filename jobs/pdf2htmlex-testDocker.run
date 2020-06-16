@@ -5,7 +5,7 @@
 # The `DIST` environment variable is used to specify which Ubuntu release 
 # will be used. (The default is `bionic`).
 
-export LAMINAR_HOME=$PWD
+source setupLaminarVars
 
 # Make sure that $WORKSPACE/$DIST exists BEFORE docker mounts it
 #
@@ -13,79 +13,86 @@ mkdir -p $PWORKSPACE/$DIST
 
 source $PWORKSPACE/$DIST/reSourceVersionEnvs
 
-export PDF=/examples/pdfFiles/een_fietsenstalling_laten_opknappen.pdf
-export bgFormat=svg
+cd $PWORKSPACE/$DIST/docker/test
 
-export WEBFSD_DIR=/workspace/webfsd/html/docker
+echo "docker name: [$DOCKER_NAME]"
 
-export PDF_PATH=$(echo $PDF | cut -d'.' -f1)
-export PDF_NAME=$(echo $PDF | cut -d'/' -f4 | cut -d'.' -f1)
+recordVar PDF2HTMLEX_PATH "rootDocker -v $PWD:/root -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX -w /root $DOCKER_NAME"
 
-export PDF_BASE_DIR=$WEBFSD_DIR/$PDF_NAME
+echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 
-echo mkdir $PWORKSPACE/..$PDF_BASE_DIR
-rm    -rf  $PWORKSPACE/..$PDF_BASE_DIR
-mkdir -p   $PWORKSPACE/..$PDF_BASE_DIR
+recordVar PDF2HTMLEX_TMPDIR /tmp/pdf2htmlEX/tmp
+recordVar PDF2HTMLEX_DATDIR /tmp/pdf2htmlEX/dat
+recordVar PDF2HTMLEX_PNGDIR /tmp/pdf2htmlEX/png
+recordVar PDF2HTMLEX_OUTDIR /tmp/pdf2htmlEX/out
+recordVar PDF2HTMLEX_PREDIR /tmp/pdf2htmlEX/pre
+recordVar PDF2HTMLEX_HTMDIR /tmp/pdf2htmlEX/html
+recordVar PDF2HTMLEX_EXPDIR /tmp/pdf2htmlEX/examples
 
-rootDocker               \
-  --entrypoint /bin/bash \
-  $DOCKER_NAME           <<DOCKER_SCRIPT
-#!/bin/bash
+mkdir -p $PDF2HTMLEX_TMPDIR
+mkdir -p $PDF2HTMLEX_DATDIR
+mkdir -p $PDF2HTMLEX_PNGDIR
+mkdir -p $PDF2HTMLEX_OUTDIR
+mkdir -p $PDF2HTMLEX_PREDIR
+mkdir -p $PDF2HTMLEX_HTMDIR
+mkdir -p $PDF2HTMLEX_EXPDIR
 
-set -ex 
+recordVar WEBFSD_DIR $PWORKSPACE/html/$DIST/docker
+mkdir -p $WEBFSD_DIR
 
-# Record the list of shared libraries in docker image
+# run local tests using only bash and pdf2htmlEX
 #
-find / -iname "*.so.*"            \
-  | xargs -i basename {} | sed 's/\r//g' | sed 's/\(so\.[0-9]\+\).*$/\1/'     \
-  | sort | uniq > /home/dev/sharedLibraries
+acceptResult ./runLocalTestsBash
+
+if test -x $PWORKSPACE/$DIST/examples/binFiles/produceHtmlFromPdfFiles ; then
+  pushd $PWORKSPACE/$DIST/examples
+    # NEED TO modify produceHtmlFromPdfFiles to work in one directory only!
+  recordVar PDF2HTMLEX_PATH "rootDocker -v $PWD:/root -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX -w /root $DOCKER_NAME"
+  echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
+  acceptResult ./binFiles/produceHtmlFromPdfFiles
+  cp -R $PDF2HTMLEX_EXPDIR $WEBFSD_DIR
+  popd
+fi
+
+acceptResult ./produceHtmlForBrowserTests
+
+###########################################################################
+# We run the following DOCKER_SCRIPT inside the laminar_dev_$DIST docker 
+# image as the dev user. 
 #
-chown 4242:4242 /home/dev/sharedLibraries
-
-DOCKER_SCRIPT
-
-rootDocker $DOCKER_FROM <<BLACK_LIST_FILES
-#!/bin/bash
-
-set -ex
-
-find / -iname "*.so.*"            \
-  | xargs -i basename {} | sed 's/\r//g' | sed 's/\(so\.[0-9]\+\).*$/\1/'     \
-  | sort | uniq > /home/dev/blackListedFiles
-
-chown 4242:4242 /home/dev/blackListedFiles
-
-BLACK_LIST_FILES
-
-rootDocker $DOCKER_NAME --version
-
-rootDocker                                                        \
-  -v /home/dev/pdf2htmlexWork/examples:/examples:ro               \
-  -v /home/dev/pdf2htmlexWork/pdf2htmlEX/pdf2htmlEX/test:/test:ro \
-  $DOCKER_NAME                                                    \
-  --zoom 1.3                                                      \
-  --embed cfij --bg-format $bgFormat                              \
-  --split-pages 1                                                 \
-  --dest-dir $PDF_BASE_DIR                                        \
-  --page-filename $PDF_NAME-%d.page                               \
-  $PDF_PATH.pdf
-
-
-devDocker laminar_$DIST <<DOCKER_SCRIPT
+devDocker laminar_dev_$DIST <<DOCKER_SCRIPT
 #!/bin/bash
 
 set -xe
 
-# Record the fonts configuration
-#
-ls -la /etc
-ls -la /etc/fonts
+source $LAMINAR_RUNDIR/reSourceLaminarVars
 
-sudo cp -R /etc/fonts .
-sudo chown -R dev:dev fonts
-
-# Make sure the html output is owned by dev:dev
+# Now load the extra pacakages (which might include fonts) to run the 
+# browser based tests. 
 #
-sudo chown -R dev:dev $PDF_BASE_DIR
+recordVar DEBIAN_FRONTEND noninteractive
+
+./installAutomaticTestSoftware
+
+ cp test.py.in test.py
+sed 's|@PDF2HTMLEX_PATH@|\$PDF2HTMLEX_PATH|'     -i test.py
+sed 's:@PDF2HTMLEX_TMPDIR@:\$PDF2HTMLEX_TMPDIR:' -i test.py
+sed 's:@PDF2HTMLEX_DATDIR@:\$PDF2HTMLEX_DATDIR:' -i test.py
+sed 's:@PDF2HTMLEX_PNGDIR@:\$PDF2HTMLEX_PNGDIR:' -i test.py
+sed 's:@PDF2HTMLEX_OUTDIR@:\$PDF2HTMLEX_OUTDIR:' -i test.py
+sed 's:@PDF2HTMLEX_PREDIR@:\$PDF2HTMLEX_PREDIR:' -i test.py
+sed 's:@PDF2HTMLEX_HTMDIR@:\$PDF2HTMLEX_HTMDIR:' -i test.py
+
+acceptResults ./runLocalBrowserTests
+
+export BROWSER_TEST_DIR=$WEBFSD_DIR/browserTests
+mkdir -p $BROWSER_TEST_DIR/pdfFiles
+cp -R $PDF2HTMLEX_HTMDIR  $BROWSER_TEST_DIR
+cp -R $PDF2HTMLEX_PNGDIR  $BROWSER_TEST_DIR
+cp -R browser_tests/*.pdf $BROWSER_TEST_DIR/pdfFiles
+
+reportResults
 
 DOCKER_SCRIPT
+
+reportResults

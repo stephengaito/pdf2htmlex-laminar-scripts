@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# This bash script starts webfsd in the foreground on the pdf2htmlEX 
+# Laminar workspace html directory. 
+
+export WEBFSD_DIR=laminar/tasks/workspaces/pdf2htmlex/html
+
+mkdir -p $WEBFSD_DIR
+
+echo cd $WEBFSD_DIR
+cd $WEBFSD_DIR
+echo "WEBFSD_DIR: [$PWD]"
+
+echo ""
+echo "URL: http://10.0.0.1:8000"
+echo ""
+echo "Type Ctrl-C to exit"
+echo ""
+
+webfsd -p 8000 -F

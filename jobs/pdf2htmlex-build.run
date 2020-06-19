@@ -63,7 +63,10 @@ fi
 # Now do the build INSIDE inside a laminar_dev_$DIST docker image as the 
 # dev user. 
 #
-devDocker laminar_dev_$DIST <<DOCKER_SCRIPT
+# Explicitly mount /etc/localtime to keep focal's configuration of tzdata 
+# happy ;-( 
+#
+cat <<DOCKER_SCRIPT > dockerScript
 #!/bin/bash
 
 source $LAMINAR_RUNDIR/reSourceLaminarVars
@@ -171,6 +174,10 @@ cp -R browser_tests/*.pdf \$BROWSER_TEST_DIR/pdfFiles
 reportResults
 
 DOCKER_SCRIPT
+
+chmod a+x dockerScript
+
+devDocker laminar_dev_$DIST ./dockerScript
 
 #######################################################################
 # Now run all build scripts which must be run *outside* of any docker 

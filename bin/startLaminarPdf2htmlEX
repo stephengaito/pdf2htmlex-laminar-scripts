@@ -8,12 +8,23 @@ export PWORKSPACE=$LAMINAR_HOME/workspaces/pdf2htmlex
 
 # Start by building the pdf2htmlEX versions we want to test.
 #
-if test -f $PWORKSPACE/bionic/reSourceVersionEnvs ; then
-  laminarc queue pdf2htmlex-test DIST=bionic
+DIST=bionic
+if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
+  laminarc queue pdf2htmlex-test DIST=$DIST
 else
-  laminarc queue pdf2htmlex-build DIST=bionic
+  laminarc queue pdf2htmlex-build DIST=$DIST
 fi
 
-#laminarc queue buildPdf2htmlEX DIST=eoan
+DIST=eoan
+if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
+  laminarc queue pdf2htmlex-test DIST=$DIST
+else
+  laminarc queue pdf2htmlex-build DIST=$DIST
+fi
 
-#laminarc queue buildPdf2htmlEX DIST=focal
+DIST=focal
+if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
+  laminarc queue pdf2htmlex-test DIST=$DIST
+else
+  laminarc queue pdf2htmlex-build DIST=$DIST
+fi

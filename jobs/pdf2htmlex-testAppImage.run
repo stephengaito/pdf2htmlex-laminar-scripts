@@ -17,7 +17,7 @@ source $PWORKSPACE/$DIST/reSourceVersionEnvs
 # We run the following DOCKER_SCRIPT inside the laminar_dev_$DIST docker 
 # image as the dev user. 
 #
-devDocker laminar_dev_$DIST <<DOCKER_SCRIPT
+cat <<DOCKER_SCRIPT > dockerScript
 #!/bin/bash
 
 source $LAMINAR_RUNDIR/reSourceLaminarVars
@@ -108,3 +108,7 @@ cp -R browser_tests/*.pdf \$BROWSER_TEST_DIR/pdfFiles
 reportResults
 
 DOCKER_SCRIPT
+
+chmod a+x dockerScript
+
+devDocker laminar_dev_$DIST ./dockerScript

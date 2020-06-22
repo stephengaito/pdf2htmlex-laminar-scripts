@@ -27,7 +27,7 @@ if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
   #
   # Start the next stage...
   #
-  laminarc queue pdf2htmlex-test DIST=$DIST
+  laminarc queue pdf2htmlex-testUbuntu DIST=$DIST
   exit 0
 fi
 
@@ -79,7 +79,7 @@ cd $LAMINAR_RUNDIR/pdf2htmlEX
 
 # Now we start the build process
 #
-failResult ./buildScripts/buildInstallLocally
+failResult ./buildScripts/buildInstallLocallyApt
 
 # Now we need to make copies of the test data for use later...
 #
@@ -107,7 +107,6 @@ recordVar DOCKER_USERNAME $DOCKER_USERNAME
 
 acceptResult ./buildScripts/createAppImage  
 acceptResult ./buildScripts/createDebianPackage
-acceptResult ./buildScripts/createDockerImageInside
 
 # Make sure that Laminar (run as dev) can eventually clean up...
 # (the debian packaging chown to "root")
@@ -122,13 +121,13 @@ sudo chown -R dev:dev $LAMINAR_RUNDIR
 cd $PWORKSPACE/$DIST/native/test
 
 recordVar PDF2HTMLEX_PATH   /usr/local/bin/pdf2htmlEX
-recordVar PDF2HTMLEX_TMPDIR /tmp/pdf2htmlEX/tmp
-recordVar PDF2HTMLEX_DATDIR /tmp/pdf2htmlEX/dat
-recordVar PDF2HTMLEX_PNGDIR /tmp/pdf2htmlEX/png
-recordVar PDF2HTMLEX_OUTDIR /tmp/pdf2htmlEX/out
-recordVar PDF2HTMLEX_PREDIR /tmp/pdf2htmlEX/pre
-recordVar PDF2HTMLEX_HTMDIR /tmp/pdf2htmlEX/html
-recordVar PDF2HTMLEX_EXPDIR /tmp/pdf2htmlEX/examples
+recordVar PDF2HTMLEX_TMPDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/tmp
+recordVar PDF2HTMLEX_DATDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/dat
+recordVar PDF2HTMLEX_PNGDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/png
+recordVar PDF2HTMLEX_OUTDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/out
+recordVar PDF2HTMLEX_PREDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/pre
+recordVar PDF2HTMLEX_HTMDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/html
+recordVar PDF2HTMLEX_EXPDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/examples
 
 mkdir -p \$PDF2HTMLEX_TMPDIR
 mkdir -p \$PDF2HTMLEX_DATDIR
@@ -141,7 +140,7 @@ mkdir -p \$PDF2HTMLEX_EXPDIR
 recordVar WEBFSD_DIR $PWORKSPACE/html/$DIST/native
 mkdir -p \$WEBFSD_DIR
 
-acceptResult ./runLocalTestsBash
+acceptResult ./runLocalTestsShell
 
 if test -x $PWORKSPACE/$DIST/examples/binFiles/produceHtmlFromPdfFiles ; then
   pushd $PWORKSPACE/$DIST/examples
@@ -152,7 +151,7 @@ fi
 
 acceptResult ./produceHtmlForBrowserTests
 
-failResult ./installAutomaticTestSoftware
+failResult ./installAutomaticTestSoftwareApt
 
 cp test.py.in test.py
 sed "s:@PDF2HTMLEX_PATH@:\$PDF2HTMLEX_PATH:"     -i test.py
@@ -187,7 +186,7 @@ devDocker laminar_dev_$DIST ./dockerScript
 # In our case, we only have to run:
 #
 cd $LAMINAR_RUNDIR/pdf2htmlEX
-acceptResult dumb-init -v ./buildScripts/createDockerImageOutside
+acceptResult ./buildScripts/createDockerUbuntuImageFromDeb
 
 #########################################################################
 # Now we copy the pdf2htmlex project release/test objects/directories to 
@@ -208,4 +207,4 @@ reportResults
 
 # Start the next stage...
 #
-laminarc queue pdf2htmlex-test DIST=$DIST
+laminarc queue pdf2htmlex-testUbuntu DIST=$DIST

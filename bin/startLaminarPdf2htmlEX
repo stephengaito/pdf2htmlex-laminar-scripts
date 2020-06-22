@@ -10,21 +10,36 @@ export PWORKSPACE=$LAMINAR_HOME/workspaces/pdf2htmlex
 #
 DIST=bionic
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
-  laminarc queue pdf2htmlex-test DIST=$DIST
+  laminarc queue pdf2htmlex-testUbuntu  DIST=$DIST
 else
-  laminarc queue pdf2htmlex-build DIST=$DIST
+  laminarc queue pdf2htmlex-buildUbuntu DIST=$DIST
 fi
+
+sleep 1
 
 DIST=eoan
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
-  laminarc queue pdf2htmlex-test DIST=$DIST
+  laminarc queue pdf2htmlex-testUbuntu  DIST=$DIST
 else
-  laminarc queue pdf2htmlex-build DIST=$DIST
+  laminarc queue pdf2htmlex-buildUbuntu DIST=$DIST
 fi
+
+sleep 1
 
 DIST=focal
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
-  laminarc queue pdf2htmlex-test DIST=$DIST
+  laminarc queue pdf2htmlex-testUbunutu DIST=$DIST
 else
-  laminarc queue pdf2htmlex-build DIST=$DIST
+  laminarc queue pdf2htmlex-buildUbuntu DIST=$DIST
+fi
+
+sleep 1
+
+# Now build the Alpine version
+#
+DIST=3.12
+if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
+  laminarc queue pdf2htmlex-testDockerAlpine DIST=$DIST
+else
+  laminarc queue pdf2htmlex-buildAlpine DIST=$DIST
 fi

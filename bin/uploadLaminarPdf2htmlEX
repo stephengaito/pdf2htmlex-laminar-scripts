@@ -1,0 +1,187 @@
+#!/bin/bash
+
+# This Laminar bash script uploads the current release artifacts.
+
+PWORKSPACE=$HOME/laminar/tasks/workspaces/pdf2htmlex
+userName=$1
+shift
+releaseDists=$*
+
+if test -z "$userName" ; then
+  echo "usage: uploadLaminarPdf2htmlEX <<userName>> [<<releaseDist>> ...]"
+  echo ""
+  echo "  <<userName>> docker hub AND gitHub user name (MUST be the same)"
+  echo ""
+  echo "  [<<releaseDist>> ...] a space separated list of distributions to upload"
+  echo "    if empty all exising distributions will be uploaded"
+  echo ""
+  exit -1
+fi
+
+if test -z "$releaseDists" ; then
+  releaseDists="bionic eoan focal 3.12"
+fi
+
+echo ""
+echo "releasing: [$releaseDists]"
+echo ""
+echo "^C to abort"
+echo ""
+
+read -p "Continue? " answer
+echo ""
+
+########################################################################
+# start by setting up the release archive name files for the gitHub 
+# release page 
+#
+export appImageNames=/tmp/appImageNames.txt
+export dockerImageNames=/tmp/dockerImageNames.txt
+export archiveNames=/tmp/archiveNames.txt
+export buildInfo=/tmp/buildInfo
+#
+rm -rf $appImageNames
+rm -rf $dockerImageNames
+rm -rf $archiveNames
+rm -rf ${buildInfo}*
+#
+touch $appImageNames
+touch $dockerImageNames
+touch $archiveNames
+
+########################################################################
+# Now start releasing the docker images to docker hub 
+#
+if [ -x "$(which docker)" ]; then
+  #
+  echo ""
+  echo "--------------------------------------------------------------"
+  echo "Releasing Docker images to docker hub:"
+  echo "--------------------------------------------------------------"
+  echo ""
+  #
+  if [ -z "$DOCKER_PASSWORD" ]; then
+    echo ""
+    echo "Please type your the Docker hub password (empty if already logged in)"
+    echo ""
+    docker login -u "$userName"
+    echo ""
+  else
+    echo "$DOCKER_PASSWORD" | docker login -u "$userName" --password-stdin
+    echo ""
+  fi
+  #
+  #
+  for aDist in $releaseDists ; do
+    if test -d $PWORKSPACE/$aDist ; then
+      source $PWORKSPACE/$aDist/reSourceVersionEnvs
+      echo ""
+      echo "---------------------------"
+  	  echo "Releasing $aDist"
+  	  echo "$DOCKER_NAME"
+  	  echo $DOCKER_NAME >> $dockerImageNames
+      docker push $DOCKER_NAME
+    fi
+  done
+else
+  echo "Docker is not installed... skipping upload of docker image."
+fi
+
+########################################################################
+# Now release the other artifacts to the github release page
+#
+echo ""
+echo "--------------------------------------------------------------"
+echo "Releasing images to GitHub:"
+echo "--------------------------------------------------------------"
+echo ""
+
+source $HOME/bin/uploadLaminarGitHubReleaseDSL
+
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo ""
+  read -s -p "Enter the GitHub upload token/password: " GITHUB_TOKEN
+  echo ""
+  if [ -z "$GITHUB_TOKEN" ]; then
+    echo "GITHUB_TOKEN not set... so we can not upload release artefacts."
+    exit 1
+  fi
+fi
+
+echo "machine api.github.com"      > $HOME/.netrc
+echo "  login    $userName"       >> $HOME/.netrc
+echo "  password $GITHUB_TOKEN"   >> $HOME/.netrc
+echo "machine uploads.github.com" >> $HOME/.netrc
+echo "  login    $userName"       >> $HOME/.netrc
+echo "  password $GITHUB_TOKEN"   >> $HOME/.netrc
+chmod 0600 $HOME/.netrc
+
+export GITHUB_REPO=$userName/pdf2htmlEX
+
+deleteReleaseByTag "$GITHUB_REPO" "continuous"
+
+createNewRelease   "$GITHUB_REPO" "continuous" "Latest release" \
+  $HOME/bin/uploadLaminarGitHubReleaseMessage
+
+for aDist in $releaseDists ; do
+  if test -d $PWORKSPACE/$aDist ; then
+    source $PWORKSPACE/$aDist/reSourceVersionEnvs
+    if test "$BUILD_OS" = "Ubuntu" ; then
+      echo ""
+      echo "---------------------------"
+      echo "Releasing Ubuntu $aDist"
+      cp $PWORKSPACE/$aDist/reSourceVersionEnvs ${buildInfo}-${aDist}.sh
+      uploadAnAsset $upload_url ${buildInfo}-${aDist}.sh "text/plain"
+      echo $APPIMAGE_NAME >> $appImageNames
+      uploadAnAsset $upload_url $APPIMAGE_NAME           "application/zip"
+      echo $DPKG_NAME >> $archiveNames
+      uploadAnAsset $upload_url $DPKG_NAME               "application/x-debian-package"
+    elif test "$BUILD_OS" = "alpine" ; then
+      echo ""
+      echo "---------------------------"
+      echo "Releasing Alpine $aDist"
+      cp $PWORKSPACE/$aDist/reSourceVersionEnvs ${buildInfo}-${aDist}.sh
+      uploadAnAsset $upload_url ${buildInfo}-${aDist}.sh "text/plain"
+      echo $ALPINE_NAME.tar.gz >> $archiveNames
+      uploadAnAsset $upload_url $ALPINE_NAME.tar.gz      "application/x-debian-package"
+    else
+      echo ""
+      echo "---------------------------"
+      echo "UNKNOW RELEASE [$BUILD_OS]"
+    fi
+  fi
+done
+
+echo ""
+echo "--------------------------------------------------------------"
+echo $appImageNames
+echo "--------------------------------------------------------------"
+cat $appImageNames
+echo "--------------------------------------------------------------"
+echo ""
+
+echo ""
+echo "--------------------------------------------------------------"
+echo $dockerImageNames
+echo "--------------------------------------------------------------"
+cat $dockerImageNames
+echo "--------------------------------------------------------------"
+echo ""
+
+echo ""
+echo "--------------------------------------------------------------"
+echo $archiveNames
+echo "--------------------------------------------------------------"
+cat $archiveNames
+echo "--------------------------------------------------------------"
+echo ""
+
+echo ""
+echo "---------------------------"
+uploadAnAsset $upload_url $appImageNames    "text/plain"
+uploadAnAsset $upload_url $dockerImageNames "text/plain"
+uploadAnAsset $upload_url $archiveNames     "text/plain"
+
+echo ""
+srm -v $HOME/.netrc $HOME/.docker/config.json
+echo ""

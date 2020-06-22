@@ -1,0 +1,344 @@
+#!/bin/bash
+
+# This bash script downloads a set of pdf2htmlEX build and test logs and 
+# checks them for the keyword: FAILURE
+
+function getALog {
+  runPartName=$1
+  runNumber=$2
+
+  echo "downloading pdf2htmlex-$runPartName / $runNumber "
+  wget -q http://172.17.0.1:8888/log/pdf2htmlex-${runPartName}/${runNumber} \
+    -O $logDir/pdf2htmlex-${runPartName}-${runNumber}.log
+}
+
+cat <<BUILD_ALPINE_CHECK > /tmp/pdf2htmlex-buildAlpine-check
+SUCCESS: 1-page.pdf
+SUCCESS: 2-pages.pdf
+SUCCESS: 1-page.pdf foo.html
+SUCCESS: 2-pages.pdf foo.html
+SUCCESS: 1-page.pdf --split-pages=1
+SUCCESS: 3-pages.pdf --split-pages=1
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%03do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%do%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%soo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%poo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%noo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%oo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%o%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do%%.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%02%doo.xyz
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo
+SUCCESS: 2-pages.pdf foo%d.html
+SUCCESS: 2-pages.pdf foo%p.html
+SUCCESS: 2-pages.pdf foo%n.html
+SUCCESS: 2-pages.pdf foo%%.html
+SUCCESS: issue501 --split-pages=1 --embed-css=0
+  SUCCESS:  basic_text
+  SUCCESS:  test_fail
+  SUCCESS:  fontfile3_opentype
+  SUCCESS:  geneve_1564
+  SUCCESS:  invalid_unicode_issue477
+  SUCCESS:  with_form
+  SUCCESS:  svg_background_with_page_rotation_issue402
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./buildScripts/createDockerAlpineImageFromTarFile
+SUCCESS: ./runLocalBrowserTests
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./buildScripts/createDockerAlpineImageFromTarFile
+SUCCESS: ./runLocalBrowserTests
+BUILD_ALPINE_CHECK
+
+cat <<BUILD_UBUNTU_CHECK > /tmp/pdf2htmlex-buildUbuntu-check
+SUCCESS: 1-page.pdf
+SUCCESS: 2-pages.pdf
+SUCCESS: 1-page.pdf foo.html
+SUCCESS: 2-pages.pdf foo.html
+SUCCESS: 1-page.pdf --split-pages=1
+SUCCESS: 3-pages.pdf --split-pages=1
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%03do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%do%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%soo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%poo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%noo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%oo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%o%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do%%.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%02%doo.xyz
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo
+SUCCESS: 2-pages.pdf foo%d.html
+SUCCESS: 2-pages.pdf foo%p.html
+SUCCESS: 2-pages.pdf foo%n.html
+SUCCESS: 2-pages.pdf foo%%.html
+SUCCESS: issue501 --split-pages=1 --embed-css=0
+  SUCCESS:  basic_text
+  SUCCESS:  test_fail
+  SUCCESS:  fontfile3_opentype
+  SUCCESS:  geneve_1564
+  SUCCESS:  invalid_unicode_issue477
+  SUCCESS:  with_form
+  SUCCESS:  svg_background_with_page_rotation_issue402
+SUCCESS: ./buildScripts/createAppImage
+SUCCESS: ./buildScripts/createDebianPackage
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+SUCCESS: ./buildScripts/createAppImage
+SUCCESS: ./buildScripts/createDebianPackage
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+SUCCESS: ./buildScripts/createDockerUbuntuImageFromDeb
+BUILD_UBUNTU_CHECK
+
+cat <<TEST_APPIMAGE_CHECK > /tmp/pdf2htmlex-testAppImage-check
+SUCCESS: 1-page.pdf
+SUCCESS: 2-pages.pdf
+SUCCESS: 1-page.pdf foo.html
+SUCCESS: 2-pages.pdf foo.html
+SUCCESS: 1-page.pdf --split-pages=1
+SUCCESS: 3-pages.pdf --split-pages=1
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%03do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%do%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%soo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%poo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%noo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%oo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%o%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do%%.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%02%doo.xyz
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo
+SUCCESS: 2-pages.pdf foo%d.html
+SUCCESS: 2-pages.pdf foo%p.html
+SUCCESS: 2-pages.pdf foo%n.html
+SUCCESS: 2-pages.pdf foo%%.html
+SUCCESS: issue501 --split-pages=1 --embed-css=0
+  SUCCESS:  basic_text
+  SUCCESS:  test_fail
+  SUCCESS:  fontfile3_opentype
+  SUCCESS:  geneve_1564
+  SUCCESS:  invalid_unicode_issue477
+  SUCCESS:  with_form
+  SUCCESS:  svg_background_with_page_rotation_issue402
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+TEST_APPIMAGE_CHECK
+
+cat <<TEST_DPKG_CHECK > /tmp/pdf2htmlex-testDpkg-check
+SUCCESS: 1-page.pdf
+SUCCESS: 2-pages.pdf
+SUCCESS: 1-page.pdf foo.html
+SUCCESS: 2-pages.pdf foo.html
+SUCCESS: 1-page.pdf --split-pages=1
+SUCCESS: 3-pages.pdf --split-pages=1
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%03do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%do%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%soo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%poo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%noo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%oo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%o%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do%%.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%02%doo.xyz
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo
+SUCCESS: 2-pages.pdf foo%d.html
+SUCCESS: 2-pages.pdf foo%p.html
+SUCCESS: 2-pages.pdf foo%n.html
+SUCCESS: 2-pages.pdf foo%%.html
+SUCCESS: issue501 --split-pages=1 --embed-css=0
+  SUCCESS:  basic_text
+  SUCCESS:  test_fail
+  SUCCESS:  fontfile3_opentype
+  SUCCESS:  geneve_1564
+  SUCCESS:  invalid_unicode_issue477
+  SUCCESS:  with_form
+  SUCCESS:  svg_background_with_page_rotation_issue402
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+TEST_DPKG_CHECK
+
+cat <<TEST_DOCKER_ALPINE_CHECK > /tmp/pdf2htmlex-testDockerAlpine-check
+SUCCESS: 1-page.pdf
+SUCCESS: 2-pages.pdf
+SUCCESS: 1-page.pdf foo.html
+SUCCESS: 2-pages.pdf foo.html
+SUCCESS: 1-page.pdf --split-pages=1
+SUCCESS: 3-pages.pdf --split-pages=1
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%03do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%do%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%soo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%poo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%noo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%oo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%o%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do%%.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%02%doo.xyz
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo
+SUCCESS: 2-pages.pdf foo%d.html
+SUCCESS: 2-pages.pdf foo%p.html
+SUCCESS: 2-pages.pdf foo%n.html
+SUCCESS: 2-pages.pdf foo%%.html
+SUCCESS: issue501 --split-pages=1 --embed-css=0
+  SUCCESS:  basic_text
+  SUCCESS:  test_fail
+  SUCCESS:  fontfile3_opentype
+  SUCCESS:  geneve_1564
+  SUCCESS:  invalid_unicode_issue477
+  SUCCESS:  with_form
+  SUCCESS:  svg_background_with_page_rotation_issue402
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+TEST_DOCKER_ALPINE_CHECK
+
+cat <<TEST_DOCKER_UBUNTU_CHECK > /tmp/pdf2htmlex-testDockerUbuntu-check
+SUCCESS: 1-page.pdf
+SUCCESS: 2-pages.pdf
+SUCCESS: 1-page.pdf foo.html
+SUCCESS: 2-pages.pdf foo.html
+SUCCESS: 1-page.pdf --split-pages=1
+SUCCESS: 3-pages.pdf --split-pages=1
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=foo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%03do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%do%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%soo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%poo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%noo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%oo.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%%o%do.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=fo%do%%.xyz
+SUCCESS: 3-pages.pdf --split-pages=1 --page-filename=f%02%doo.xyz
+SUCCESS: 1-page.pdf --split-pages=1 --page-filename=foo
+SUCCESS: 2-pages.pdf foo%d.html
+SUCCESS: 2-pages.pdf foo%p.html
+SUCCESS: 2-pages.pdf foo%n.html
+SUCCESS: 2-pages.pdf foo%%.html
+SUCCESS: issue501 --split-pages=1 --embed-css=0
+  SUCCESS:  basic_text
+  SUCCESS:  test_fail
+  SUCCESS:  fontfile3_opentype
+  SUCCESS:  geneve_1564
+  SUCCESS:  invalid_unicode_issue477
+  SUCCESS:  with_form
+  SUCCESS:  svg_background_with_page_rotation_issue402
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
+SUCCESS: ./runLocalBrowserTests
+TEST_DOCKER_UBUNTU_CHECK
+
+function checkALog {
+  runPartName=$1
+  runNumber=$2
+
+  if test -s  $logDir/pdf2htmlex-$runPartName-$runNumber.log ; then
+    echo "checking pdf2htmlex-$runPartName / $runNumber "
+    grep SUCCESS $logDir/pdf2htmlex-$runPartName-$runNumber.log \
+      > /tmp/pdf2htmlex-$runPartName-$runNumber.success
+    diff /tmp/pdf2htmlex-$runPartName-$runNumber.success \
+        /tmp/pdf2htmlex-$runPartName-check
+  fi
+}
+
+if test $# -ne 1 ; then
+  echo "usage: checkLaminarPdf2htmlEX <<max-job-number>>"
+  exit -1
+fi
+
+maxJobNumber=$1
+
+logDir=$HOME/laminar/tasks/logs
+
+# start by clearing out any existing log files
+#
+rm -rf $logDir
+mkdir -p $logDir
+
+for (( aJobNumber=1; aJobNumber<=$maxJobNumber; aJobNumber++ )) ; do
+  getALog buildUbuntu      $aJobNumber
+  getALog buildAlpine      $aJobNumber
+  getALog testAppImage     $aJobNumber
+  getALog testDpkg         $aJobNumber
+  getALog testDockerUbuntu $aJobNumber
+  getALog testDockerAlpine $aJobNumber
+done
+
+# echo ""
+# echo "----------------------------------------------------------------"
+# echo "SUCCESS:"
+# echo "----------------------------------------------------------------"
+# grep SUCCESS $logDir/*
+# echo "----------------------------------------------------------------"
+# echo ""
+# 
+
+echo ""
+echo "----------------------------------------------------------------"
+echo "Diffing SUCCESS:"
+echo "( Any '>' lines represent tests that were not conducted )"
+echo "----------------------------------------------------------------"
+echo ""
+for (( aJobNumber=1; aJobNumber<=$maxJobNumber; aJobNumber++ )) ; do
+  checkALog buildUbuntu      $aJobNumber
+  checkALog buildAlpine      $aJobNumber
+  checkALog testAppImage     $aJobNumber
+  checkALog testDpkg         $aJobNumber
+  checkALog testDockerUbuntu $aJobNumber
+  checkALog testDockerAlpine $aJobNumber
+done
+
+echo ""
+echo "----------------------------------------------------------------"
+echo "FAILURE:"
+echo "----------------------------------------------------------------"
+grep FAILURE $logDir/*
+echo "----------------------------------------------------------------"
+echo ""
+
+echo ""
+echo "----------------------------------------------------------------"
+echo "unclosed <socket (runLocalBrowserTests FAILURE)"
+echo "----------------------------------------------------------------"
+grep "unclosed <socket.socket" $logDir/*
+echo "----------------------------------------------------------------"
+echo ""

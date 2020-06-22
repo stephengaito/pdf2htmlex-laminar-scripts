@@ -16,14 +16,13 @@ source $PWORKSPACE/$DIST/reSourceVersionEnvs
 
 echo "docker name: [$DOCKER_NAME]"
 
-
-recordVar PDF2HTMLEX_TMPDIR /tmp/pdf2htmlEX/tmp
-recordVar PDF2HTMLEX_DATDIR /tmp/pdf2htmlEX/dat
-recordVar PDF2HTMLEX_PNGDIR /tmp/pdf2htmlEX/png
-recordVar PDF2HTMLEX_OUTDIR /tmp/pdf2htmlEX/out
-recordVar PDF2HTMLEX_PREDIR /tmp/pdf2htmlEX/pre
-recordVar PDF2HTMLEX_HTMDIR /tmp/pdf2htmlEX/html
-recordVar PDF2HTMLEX_EXPDIR /tmp/pdf2htmlEX/examples
+recordVar PDF2HTMLEX_TMPDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/tmp
+recordVar PDF2HTMLEX_DATDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/dat
+recordVar PDF2HTMLEX_PNGDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/png
+recordVar PDF2HTMLEX_OUTDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/out
+recordVar PDF2HTMLEX_PREDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/pre
+recordVar PDF2HTMLEX_HTMDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/html
+recordVar PDF2HTMLEX_EXPDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/examples
 
 mkdir -p $PDF2HTMLEX_TMPDIR
 mkdir -p $PDF2HTMLEX_DATDIR
@@ -43,7 +42,7 @@ echo "ROOT_DOCKER: [$ROOT_DOCKER]"
 recordVar PDF2HTMLEX_PATH "$ROOT_DOCKER -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
 recordVar PDF2HTMLEX_PATH "$ROOT_DOCKER -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
 echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
-acceptResult ./runLocalTestsBash
+acceptResult ./runLocalTestsShell
 
 if test -x $PWORKSPACE/$DIST/examples/binFiles/produceHtmlFromPdfFiles ; then
   cd $PWORKSPACE/$DIST/examples
@@ -64,10 +63,10 @@ echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 acceptResult ./produceHtmlForBrowserTests
 
 ###########################################################################
-# We run the following DOCKER_SCRIPT inside the laminar_dev_$DIST docker 
+# We run the following DOCKER_SCRIPT inside the laminar_dev_focal docker 
 # image as the dev user. 
 #
-cat  <<DOCKER_SCRIPT > dockerScript
+cat  <<DOCKER_SCRIPT > finishLocalBrowserTestsDockerScript
 #!/bin/bash
 
 source $LAMINAR_RUNDIR/reSourceLaminarVars
@@ -77,7 +76,7 @@ source $LAMINAR_RUNDIR/reSourceLaminarVars
 #
 recordVar DEBIAN_FRONTEND noninteractive
 
-failResult ./installAutomaticTestSoftware
+failResult ./installAutomaticTestSoftwareApt
 
 echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 
@@ -104,8 +103,14 @@ reportResults
 
 DOCKER_SCRIPT
 
-chmod a+x dockerScript
+chmod a+x finishLocalBrowserTestsDockerScript
 
-devDocker -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX laminar_dev_$DIST ./dockerScript
+# Since we are testing the html generated which has already been generated 
+# by an Alpine base Docker image... we *can* run the final python3 diffing 
+# inside an Ubuntu Focal based docker image... 
+#
+devDocker -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX \
+  laminar_dev_focal                          \
+  ./finishLocalBrowserTestsDockerScript
 
 reportResults

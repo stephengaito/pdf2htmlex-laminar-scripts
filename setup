@@ -11,8 +11,12 @@ jobDir=$LAMINAR_HOME/cfg/jobs
 tarDir=$LAMINAR_HOME/cfg/tarArchives
 mkdir -p $tarDir
 
-cp bin/startLaminar*                        $binDir
+cp bin/startLaminar*  $binDir
 
-cp jobs/pdf2htmlex*                         $jobDir
+cp bin/checkLaminar*   $binDir
+
+cp bin/uploadLaminar*  $binDir
+
+cp jobs/pdf2htmlex*    $jobDir
 
 cp tarArchives/pdf2htmlEX-examples-*.tar.gz $tarDir/pdf2htmlEX-examples.tar.gz

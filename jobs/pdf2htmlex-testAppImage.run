@@ -50,13 +50,13 @@ $PWORKSPACE/$DIST/$APPIMAGE_NAME --appimage-extract
 cd $PWORKSPACE/$DIST/appImage/test
 
 recordVar PDF2HTMLEX_PATH   $LAMINAR_RUNDIR/squashfs-root/AppRun
-recordVar PDF2HTMLEX_TMPDIR /tmp/pdf2htmlEX/tmp
-recordVar PDF2HTMLEX_DATDIR /tmp/pdf2htmlEX/dat
-recordVar PDF2HTMLEX_PNGDIR /tmp/pdf2htmlEX/png
-recordVar PDF2HTMLEX_OUTDIR /tmp/pdf2htmlEX/out
-recordVar PDF2HTMLEX_PREDIR /tmp/pdf2htmlEX/pre
-recordVar PDF2HTMLEX_HTMDIR /tmp/pdf2htmlEX/html
-recordVar PDF2HTMLEX_EXPDIR /tmp/pdf2htmlEX/examples
+recordVar PDF2HTMLEX_TMPDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/tmp
+recordVar PDF2HTMLEX_DATDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/dat
+recordVar PDF2HTMLEX_PNGDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/png
+recordVar PDF2HTMLEX_OUTDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/out
+recordVar PDF2HTMLEX_PREDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/pre
+recordVar PDF2HTMLEX_HTMDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/html
+recordVar PDF2HTMLEX_EXPDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/examples
 
 mkdir -p \$PDF2HTMLEX_TMPDIR
 mkdir -p \$PDF2HTMLEX_DATDIR
@@ -71,7 +71,7 @@ mkdir -p \$WEBFSD_DIR
 
 # run local tests using only bash and pdf2htmlEX
 #
-acceptResult ./runLocalTestsBash
+acceptResult ./runLocalTestsShell
 
 if test -x $PWORKSPACE/$DIST/examples/binFiles/produceHtmlFromPdfFiles ; then
   recordVar PDF2HTMLEX_PATH "$LAMINAR_RUNDIR/squashfs-root/AppRun --data-dir=$LAMINAR_RUNDIR/squashfs-root/usr/local/share/pdf2htmlEX"
@@ -86,7 +86,7 @@ acceptResult ./produceHtmlForBrowserTests
 # Now load the extra pacakages (which might include fonts) to run the 
 # browser based tests. 
 #
-failResult ./installAutomaticTestSoftware
+failResult ./installAutomaticTestSoftwareApt
 
 cp test.py.in test.py
 sed "s:@PDF2HTMLEX_PATH@:\$PDF2HTMLEX_PATH:"     -i test.py

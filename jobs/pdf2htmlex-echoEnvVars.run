@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# This Laminar run bash script simply echos the current environment variables
+
+printenv

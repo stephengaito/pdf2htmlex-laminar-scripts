@@ -37,6 +37,9 @@ SUCCESS: 2-pages.pdf foo%p.html
 SUCCESS: 2-pages.pdf foo%n.html
 SUCCESS: 2-pages.pdf foo%%.html
 SUCCESS: issue501 --split-pages=1 --embed-css=0
+SUCCESS: ./runLocalTestsShell
+SUCCESS: ./binFiles/produceHtmlFromPdfFiles
+SUCCESS: ./produceHtmlForBrowserTests
   SUCCESS:  basic_text
   SUCCESS:  test_fail
   SUCCESS:  fontfile3_opentype
@@ -44,10 +47,6 @@ SUCCESS: issue501 --split-pages=1 --embed-css=0
   SUCCESS:  invalid_unicode_issue477
   SUCCESS:  with_form
   SUCCESS:  svg_background_with_page_rotation_issue402
-SUCCESS: ./runLocalTestsShell
-SUCCESS: ./binFiles/produceHtmlFromPdfFiles
-SUCCESS: ./produceHtmlForBrowserTests
-SUCCESS: ./runLocalBrowserTests
 SUCCESS: ./runLocalTestsShell
 SUCCESS: ./binFiles/produceHtmlFromPdfFiles
 SUCCESS: ./produceHtmlForBrowserTests

@@ -192,7 +192,7 @@ failResult ./installAutomaticTestSoftwareApt
 echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 
 cp test.py.in test.py
-sed "s:@PDF2HTMLEX_PATH@:\$PDF2HTMLEX_PATH:"     -i test.py
+sed "s:@PDF2HTMLEX_PATH@:/bin/true:"             -i test.py
 sed "s:@PDF2HTMLEX_TMPDIR@:\$PDF2HTMLEX_TMPDIR:" -i test.py
 sed "s:@PDF2HTMLEX_DATDIR@:\$PDF2HTMLEX_DATDIR:" -i test.py
 sed "s:@PDF2HTMLEX_PNGDIR@:\$PDF2HTMLEX_PNGDIR:" -i test.py
@@ -222,8 +222,20 @@ devDocker -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX \
   laminar_dev_focal                          \
   ./finishLocalBrowserTestsDockerScript
 
+#########################################################################
+# Now we copy the pdf2htmlex project release/test objects/directories to 
+# the project workspace. 
+#
+
+cd $LAMINAR_RUNDIR/pdf2htmlEX
+source buildScripts/reSourceVersionEnvs
+
+cp imageBuild/$ALPINE_NAME.tar.gz  $PWORKSPACE/$DIST
+cp imageBuild/$ALPINE_NAME.install $PWORKSPACE/$DIST
+
 # and lastly copy the marker we use to skip re-building
 #
+
 cp buildScripts/reSourceVersionEnvs $PWORKSPACE/$DIST
 
 reportResults

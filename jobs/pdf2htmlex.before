@@ -4,18 +4,24 @@
 # provide a programatic way to `laminarc set` Laminar environment 
 # variables. 
 
-export REPO=${REPO:=stephengaito/pdf2htmlEX}
+export DOCKER_USERNAME=${DOCKER_USERNAME:=pdf2htmlEX}
+
+# make sure the REPO uses the correct CamelCase
+#
+export REPO=${REPO:=$DOCKER_USERNAME/pdf2htmlEX}
 echo laminarc set REPO=$REPO
 laminarc set REPO=$REPO
 
-export BRANCH=${BRANCH:=updateBuildScripts}
+# Now make docker hub happy by forcing the DOCKER_USERNAME to lowercase 
+#
+export DOCKER_USERNAME=${DOCKER_USERNAME,,}
+echo laminarc set DOCKER_USERNAME=$DOCKER_USERNAME
+laminarc set DOCKER_USERNAME=$DOCKER_USERNAME
+
+export BRANCH=${BRANCH:=master}
 echo laminarc set BRANCH=$BRANCH
 laminarc set BRANCH=$BRANCH
 
 export DOCKER_FROM=ubuntu:$DIST
 echo laminarc set DOCKER_FROM=$DOCKER_FROM
 laminarc set DOCKER_FROM=$DOCKER_FROM
-
-export DOCKER_USERNAME=${DOCKER_USERNAME:=stephengaito}
-echo laminarc set DOCKER_USERNAME=$DOCKER_USERNAME
-laminarc set DOCKER_USERNAME=$DOCKER_USERNAME

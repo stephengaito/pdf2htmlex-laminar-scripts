@@ -28,8 +28,18 @@ echo ""
 echo "^C to abort"
 echo ""
 
-read -p "Continue? " answer
+read -p "Continue by editing uploadLaminarGitHubReleaseMessage? " answer
 echo ""
+
+nano $HOME/bin/uploadLaminarGitHubReleaseMessage
+
+echo ""
+echo "^C to abort"
+echo ""
+
+read -p "Was that edit ok? Should we continue? " answer
+echo ""
+
 
 ########################################################################
 # start by setting up the release archive name files for the gitHub 
@@ -116,7 +126,28 @@ echo "  login    $userName"       >> $HOME/.netrc
 echo "  password $GITHUB_TOKEN"   >> $HOME/.netrc
 chmod 0600 $HOME/.netrc
 
-export GITHUB_REPO=$userName/pdf2htmlEX
+# Compute the correct GitHub repository organization/user
+#
+lastDockerUserName=""
+for aDist in $releaseDists ; do
+  if test -f $PWORKSPACE/$aDist/reSourceVersionEnvs ; then
+    source $PWORKSPACE/$aDist/reSourceVersionEnvs
+    if test -n "$lastDockerUserName" ; then
+      if test "$lastDockerUserName" != "$DOCKER_USERNAME" ; then
+        echo "ERRROR: inconsistent DOCKER_USERNAMEs across release distributions"
+        exit -1
+      fi
+    fi
+    lastDockerUserName="$DOCKER_USERNAME"
+  fi
+done
+#
+if test -z "$lastDockerUserName" ; then
+  echo "ERROR: no DOCKER_USERNAME found"
+  exit -1
+fi
+#
+export GITHUB_REPO="$lastDockerUserName/pdf2htmlEX"
 
 deleteReleaseByTag "$GITHUB_REPO" "continuous"
 
@@ -133,9 +164,9 @@ for aDist in $releaseDists ; do
       cp $PWORKSPACE/$aDist/reSourceVersionEnvs ${buildInfo}-${aDist}.sh
       uploadAnAsset $upload_url ${buildInfo}-${aDist}.sh "text/plain"
       echo $APPIMAGE_NAME >> $appImageNames
-      uploadAnAsset $upload_url $APPIMAGE_NAME           "application/zip"
+      uploadAnAsset $upload_url $PWORKSPACE/$aDist/$APPIMAGE_NAME "application/zip"
       echo $DPKG_NAME >> $archiveNames
-      uploadAnAsset $upload_url $DPKG_NAME               "application/x-debian-package"
+      uploadAnAsset $upload_url $PWORKSPACE/$aDist/$DPKG_NAME "application/x-debian-package"
     elif test "$BUILD_OS" = "alpine" ; then
       echo ""
       echo "---------------------------"
@@ -143,7 +174,7 @@ for aDist in $releaseDists ; do
       cp $PWORKSPACE/$aDist/reSourceVersionEnvs ${buildInfo}-${aDist}.sh
       uploadAnAsset $upload_url ${buildInfo}-${aDist}.sh "text/plain"
       echo $ALPINE_NAME.tar.gz >> $archiveNames
-      uploadAnAsset $upload_url $ALPINE_NAME.tar.gz      "application/x-debian-package"
+      uploadAnAsset $upload_url $PWORKSPACE/$aDist/$ALPINE_NAME.tar.gz "application/x-debian-package"
     else
       echo ""
       echo "---------------------------"

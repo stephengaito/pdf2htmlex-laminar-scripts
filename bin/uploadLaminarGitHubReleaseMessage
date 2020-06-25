@@ -1,35 +1,21 @@
 This is the most recent release of the pdf2htmlEX project.
 
-We release three types of binary objects:
+It adds support for Poppler version 0.89.0 as well as FontForge version 
+20200314. 
 
-1. The file *.AppImage on this release page is an AppImage
+We release five types of objects:
+1. [Debian archives](https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Download-Debian-Archive)
+2. [Alpine tar archive](https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Download-Alpine-Tar-Archive)
+3. [AppImage](https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Download-AppImage)
+4. [Docker image](https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Download-Docker-Image)
+5. [Source](https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building)
 
-   You can download the AppImage, make it executable and then 'just run 
-   it'. 
+You can click on any of the above links to find more information on how to 
+download and use each type of release object. 
 
-   See: https://appimage.org/ for details
-
-2. The file *.deb is a Debian Archive
-
-   You can download the Debian Archive and install it locally using: 
-   
-       sudo apt install <<releativePathToDebFile>>
-
-   While the Debian archive is built on a specific Ubuntu release, it can 
-   usually be used on any more recent Ubuntu releases. 
-
-3. You can alternatively get pdf2htmlEX Docker images from Docker Hub in 
-   either of the repositories: 
-
-       pdf2htmlEX/pdf2htmlEX (offical release)
-
-   or 
-
-       stephengaito/pdf2htmlEX (development releases)
-
-We also release a zip archive of the browser test results in the 
-*-testResults.zip file. 
-
-Finally, the various *.txt and *buildInfo.sh files have well known 
-(unchanging) names which can be used by automatic scripts to identifiy the 
+Finally, the various `*.txt` and `buildInfo-*.sh` files have well known 
+(unchanging) names which can be used by automatic scripts to identify the 
 current full names of the corresponding binary artifacts. 
+
+**For information on how to use `pdf2htmlEX` have a look at our 
+[Wiki](https://github.com/pdf2htmlEX/pdf2htmlEX/wiki)** 

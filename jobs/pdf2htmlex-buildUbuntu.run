@@ -11,7 +11,7 @@
 # github repository to download and build. (The default is 
 # `stephengaito/pdf2htmlEX`). 
 
-# The `BRANCH` environment variable is used to determine which 
+# The `PDF2HTMLEX_BRANCH` environment variable is used to determine which 
 # branch/tag/commit of pdf2htmlEX to download and build. (The defualt is 
 # `master`). 
 
@@ -37,7 +37,7 @@ fi
 
 # We meed to download pdf2htmlEX
 #
-git clone --depth=50 --branch=$BRANCH  https://github.com/$REPO
+git clone --depth=50 --branch=$PDF2HTMLEX_BRANCH  https://github.com/$REPO
 
 cd $LAMINAR_RUNDIR/pdf2htmlEX
 
@@ -47,7 +47,7 @@ cd $LAMINAR_RUNDIR/pdf2htmlEX
 git config user.name "Stephen Gaito"
 git config user.email "stephen@perceptisys.co.uk"
 
-git checkout $BRANCH
+git checkout $PDF2HTMLEX_BRANCH
 
 # Clone our (private) collection of PDF files for further testing
 # (it is OK if we can"t)

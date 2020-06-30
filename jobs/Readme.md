@@ -5,7 +5,7 @@ chaining Laminar jobs. This is as simple as using a `laminar queue`
 command at the end of a successful build job. 
 
 - `pdf2htmlex.before` A pdf2htmlex project before script to ensure the 
-  `REPO` and `BRANCH` environment variables are set.
+  `REPO` and `PDF2HTMLEX_BRANCH` environment variables are set.
 
 - `pdf2htmlex-build.run` acutally builds, installs and creates an 
   AppImage, Debian archive and a Docker image. 

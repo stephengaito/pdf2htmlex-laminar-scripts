@@ -39,27 +39,27 @@ mkdir -p $WEBFSD_DIR
 # run local tests using only bash and pdf2htmlEX
 #
 cd $PWORKSPACE/$DIST/docker/test
-echo "ROOT_DOCKER: [$ROOT_DOCKER]"
-recordVar PDF2HTMLEX_PATH "$ROOT_DOCKER -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
-recordVar PDF2HTMLEX_PATH "$ROOT_DOCKER -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+echo "BASE_DOCKER: [$BASE_DOCKER]"
+recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
 echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 acceptResult ./runLocalTestsShell
 
 if test -x $PWORKSPACE/$DIST/examples/binFiles/produceHtmlFromPdfFiles ; then
   cd $PWORKSPACE/$DIST/examples
-  echo "ROOT_DOCKER: [$ROOT_DOCKER]"
+  echo "BASE_DOCKER: [$BASE_DOCKER]"
     # NEED TO modify produceHtmlFromPdfFiles to work in one directory only!
-  recordVar PDF2HTMLEX_PATH "$ROOT_DOCKER -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
-  recordVar PDF2HTMLEX_PATH "$ROOT_DOCKER -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+  recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+  recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
   echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
   acceptResult ./binFiles/produceHtmlFromPdfFiles
   cp -R $PDF2HTMLEX_EXPDIR $WEBFSD_DIR
 fi
 
 cd $PWORKSPACE/$DIST/docker/test
-echo "ROOT_DOCKER: [$ROOT_DOCKER]"
-recordVar PDF2HTMLEX_PATH "$ROOT_DOCKER -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
-recordVar PDF2HTMLEX_PATH "$ROOT_DOCKER -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+echo "BASE_DOCKER: [$BASE_DOCKER]"
+recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
 echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 acceptResult ./produceHtmlForBrowserTests
 

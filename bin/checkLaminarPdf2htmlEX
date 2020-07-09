@@ -50,12 +50,12 @@ SUCCESS: ./produceHtmlForBrowserTests
 SUCCESS: ./runLocalTestsShell
 SUCCESS: ./binFiles/produceHtmlFromPdfFiles
 SUCCESS: ./produceHtmlForBrowserTests
-SUCCESS: ./buildScripts/createDockerAlpineImageFromTarFile
+SUCCESS: ./buildScripts/createContainerAlpineImageFromTarFile
 SUCCESS: ./runLocalBrowserTests
 SUCCESS: ./runLocalTestsShell
 SUCCESS: ./binFiles/produceHtmlFromPdfFiles
 SUCCESS: ./produceHtmlForBrowserTests
-SUCCESS: ./buildScripts/createDockerAlpineImageFromTarFile
+SUCCESS: ./buildScripts/createContainerAlpineImageFromTarFile
 SUCCESS: ./runLocalBrowserTests
 BUILD_ALPINE_CHECK
 
@@ -103,7 +103,7 @@ SUCCESS: ./runLocalTestsShell
 SUCCESS: ./binFiles/produceHtmlFromPdfFiles
 SUCCESS: ./produceHtmlForBrowserTests
 SUCCESS: ./runLocalBrowserTests
-SUCCESS: ./buildScripts/createDockerUbuntuImageFromDeb
+SUCCESS: ./buildScripts/createContainerUbuntuImageFromDeb
 BUILD_UBUNTU_CHECK
 
 cat <<TEST_APPIMAGE_CHECK > /tmp/pdf2htmlex-testAppImage-check
@@ -182,7 +182,7 @@ SUCCESS: ./produceHtmlForBrowserTests
 SUCCESS: ./runLocalBrowserTests
 TEST_DPKG_CHECK
 
-cat <<TEST_DOCKER_ALPINE_CHECK > /tmp/pdf2htmlex-testDockerAlpine-check
+cat <<TEST_CONTAINER_ALPINE_CHECK > /tmp/pdf2htmlex-testContainerAlpine-check
 SUCCESS: 1-page.pdf
 SUCCESS: 2-pages.pdf
 SUCCESS: 1-page.pdf foo.html
@@ -222,9 +222,9 @@ SUCCESS: ./runLocalTestsShell
 SUCCESS: ./binFiles/produceHtmlFromPdfFiles
 SUCCESS: ./produceHtmlForBrowserTests
 SUCCESS: ./runLocalBrowserTests
-TEST_DOCKER_ALPINE_CHECK
+TEST_CONTAINER_ALPINE_CHECK
 
-cat <<TEST_DOCKER_UBUNTU_CHECK > /tmp/pdf2htmlex-testDockerUbuntu-check
+cat <<TEST_CONTAINER_UBUNTU_CHECK > /tmp/pdf2htmlex-testContainerUbuntu-check
 SUCCESS: 1-page.pdf
 SUCCESS: 2-pages.pdf
 SUCCESS: 1-page.pdf foo.html
@@ -264,7 +264,7 @@ SUCCESS: ./runLocalTestsShell
 SUCCESS: ./binFiles/produceHtmlFromPdfFiles
 SUCCESS: ./produceHtmlForBrowserTests
 SUCCESS: ./runLocalBrowserTests
-TEST_DOCKER_UBUNTU_CHECK
+TEST_CONTAINER_UBUNTU_CHECK
 
 function checkALog {
   runPartName=$1
@@ -294,12 +294,12 @@ rm -rf $logDir
 mkdir -p $logDir
 
 for (( aJobNumber=1; aJobNumber<=$maxJobNumber; aJobNumber++ )) ; do
-  getALog buildUbuntu      $aJobNumber
-  getALog buildAlpine      $aJobNumber
-  getALog testAppImage     $aJobNumber
-  getALog testDpkg         $aJobNumber
-  getALog testDockerUbuntu $aJobNumber
-  getALog testDockerAlpine $aJobNumber
+  getALog buildUbuntu         $aJobNumber
+  getALog buildAlpine         $aJobNumber
+  getALog testAppImage        $aJobNumber
+  getALog testDpkg            $aJobNumber
+  getALog testContainerUbuntu $aJobNumber
+  getALog testContainerAlpine $aJobNumber
 done
 
 # echo ""
@@ -318,12 +318,12 @@ echo "( Any '>' lines represent tests that were not conducted )"
 echo "----------------------------------------------------------------"
 echo ""
 for (( aJobNumber=1; aJobNumber<=$maxJobNumber; aJobNumber++ )) ; do
-  checkALog buildUbuntu      $aJobNumber
-  checkALog buildAlpine      $aJobNumber
-  checkALog testAppImage     $aJobNumber
-  checkALog testDpkg         $aJobNumber
-  checkALog testDockerUbuntu $aJobNumber
-  checkALog testDockerAlpine $aJobNumber
+  checkALog buildUbuntu         $aJobNumber
+  checkALog buildAlpine         $aJobNumber
+  checkALog testAppImage        $aJobNumber
+  checkALog testDpkg            $aJobNumber
+  checkALog testContainerUbuntu $aJobNumber
+  checkALog testContainerAlpine $aJobNumber
 done
 
 echo ""

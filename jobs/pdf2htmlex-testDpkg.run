@@ -7,22 +7,22 @@
 
 source setupLaminarVars
 
-# Make sure that $WORKSPACE/$DIST exists BEFORE docker mounts it
+# Make sure that $WORKSPACE/$DIST exists BEFORE podman mounts it
 #
 mkdir -p $PWORKSPACE/$DIST
 
 source $PWORKSPACE/$DIST/reSourceVersionEnvs
 
 ###########################################################################
-# We run the following DOCKER_SCRIPT inside the laminar_dev_$DIST docker 
+# We run the following PODMAN_SCRIPT inside the laminar_dev_$DIST podman 
 # image as the dev user. 
 #
-cat <<DOCKER_SCRIPT > dockerScript
+cat <<PODMAN_SCRIPT > podmanScript
 #!/bin/bash
 
 source $LAMINAR_RUNDIR/reSourceLaminarVars
 
-# This bash script is used *inside* a docker image to test the Debian 
+# This bash script is used *inside* a podman image to test the Debian 
 # archive version of pdf2htmlEX. 
 
 recordVar DEBIAN_FRONTEND noninteractive
@@ -93,8 +93,8 @@ cp -R browser_tests/*.pdf \$BROWSER_TEST_DIR/pdfFiles
 
 reportResults
 
-DOCKER_SCRIPT
+PODMAN_SCRIPT
 
-chmod a+x dockerScript
+chmod a+x podmanScript
 
-devDocker laminar_dev_$DIST ./dockerScript
+devPodman laminar_dev_$DIST ./podmanScript

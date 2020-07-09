@@ -4,24 +4,24 @@
 # provide a programatic way to `laminarc set` Laminar environment 
 # variables. 
 
-export DOCKER_USERNAME=${DOCKER_USERNAME:=pdf2htmlEX}
+export DOCKER_HUB_USERNAME=${DOCKER_HUB_USERNAME:=pdf2htmlEX}
 
 # make sure the REPO uses the correct CamelCase
 #
-export REPO=${REPO:=$DOCKER_USERNAME/pdf2htmlEX}
+export REPO=${REPO:=$DOCKER_HUB_USERNAME/pdf2htmlEX}
 echo laminarc set REPO=$REPO
 laminarc set REPO=$REPO
 
-# Now make docker hub happy by forcing the DOCKER_USERNAME to lowercase 
+# Now make docker hub happy by forcing the DOCKER_HUB_USERNAME to lowercase 
 #
-export DOCKER_USERNAME=${DOCKER_USERNAME,,}
-echo laminarc set DOCKER_USERNAME=$DOCKER_USERNAME
-laminarc set DOCKER_USERNAME=$DOCKER_USERNAME
+export DOCKER_HUB_USERNAME=${DOCKER_HUB_USERNAME,,}
+echo laminarc set DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME
+laminarc set DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME
 
 export PDF2HTMLEX_BRANCH=${PDF2HTMLEX_BRANCH:=master}
 echo laminarc set PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 laminarc set PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 
-export DOCKER_FROM=ubuntu:$DIST
-echo laminarc set DOCKER_FROM=$DOCKER_FROM
-laminarc set DOCKER_FROM=$DOCKER_FROM
+export CONTAINER_FROM=ubuntu:$DIST
+echo laminarc set CONTAINER_FROM=$CONTAINER_FROM
+laminarc set CONTAINER_FROM=$CONTAINER_FROM

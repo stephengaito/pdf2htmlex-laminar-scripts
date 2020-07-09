@@ -13,8 +13,8 @@ if test -z "$branch" ; then
   branch=master
 fi
 
-echo export DOCKER_USERNAME=$userName
-export DOCKER_USERNAME=$userName
+echo export DOCKER_HUB_USERNAME=$userName
+export DOCKER_HUB_USERNAME=$userName
 
 echo export PDF2HTMLEX_BRANCH=$branch
 export PDF2HTMLEX_BRANCH=$branch
@@ -25,20 +25,16 @@ export LAMINAR_HOME=$HOME/laminar/tasks
 echo export PWORKSPACE=$LAMINAR_HOME/workspaces/pdf2htmlex
 export PWORKSPACE=$LAMINAR_HOME/workspaces/pdf2htmlex
 
-# laminarc queue pdf2htmlex-echoEnvVars         \
-#   DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME
-# exit 0
-
 # Start by building the pdf2htmlEX versions we want to test.
 #
 DIST=bionic
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
   laminarc queue pdf2htmlex-testUbuntu          \
-    DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME \
+    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 else
   laminarc queue pdf2htmlex-buildUbuntu         \
-    DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME \
+    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 fi
 
@@ -47,11 +43,11 @@ sleep 1
 DIST=eoan
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
   laminarc queue pdf2htmlex-testUbuntu          \
-    DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME \
+    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 else
   laminarc queue pdf2htmlex-buildUbuntu         \
-    DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME \
+    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 fi
 
@@ -60,11 +56,11 @@ sleep 1
 DIST=focal
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
   laminarc queue pdf2htmlex-testUbunutu         \
-    DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME \
+    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 else
   laminarc queue pdf2htmlex-buildUbuntu         \
-    DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME \
+    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 fi
 
@@ -74,11 +70,11 @@ sleep 1
 #
 DIST=3.12
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
-  laminarc queue pdf2htmlex-testDockerAlpine    \
-    DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME \
+  laminarc queue pdf2htmlex-testContainerAlpine    \
+    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 else
   laminarc queue pdf2htmlex-buildAlpine         \
-    DIST=$DIST DOCKER_USERNAME=$DOCKER_USERNAME \
+    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 fi

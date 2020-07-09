@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This laminar run bash script automates the bulding, local installation, 
-# and creation of an AppImage, Debian archive and Docker image for a 
+# and creation of an AppImage, Debian archive and Podman image for a 
 # particular Ubuntu release.
 
 # The `DIST` environment variable is used to specify which Ubuntu release 
@@ -17,7 +17,7 @@
 
 source setupLaminarVars
 
-# Make sure that $WORKSPACE/$DIST exists BEFORE docker mounts it
+# Make sure that $WORKSPACE/$DIST exists BEFORE podman mounts it
 #
 mkdir -p $PWORKSPACE/$DIST
 
@@ -32,7 +32,7 @@ if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
 fi
 
 ########################################################################
-# Obtain the required git repositories (outside of any docker container)
+# Obtain the required git repositories (outside of any podman container)
 #
 
 # We meed to download pdf2htmlEX
@@ -60,18 +60,18 @@ if test -r $LAMINAR_HOME/cfg/tarArchives/pdf2htmlEX-examples.tar.gz ; then
 fi
   
 ###########################################################################
-# Now do the build INSIDE inside a laminar_dev_$DIST docker image as the 
+# Now do the build INSIDE inside a laminar_dev_$DIST podman image as the 
 # dev user. 
 #
 # Explicitly mount /etc/localtime to keep focal's configuration of tzdata 
 # happy ;-( 
 #
-cat <<DOCKER_SCRIPT > dockerScript
+cat <<PODMAN_SCRIPT > podmanScript
 #!/bin/bash
 
 source $LAMINAR_RUNDIR/reSourceLaminarVars
 
-# This bash script is used *inside* a docker image to build pdf2htmlEX.
+# This bash script is used *inside* a podman image to build pdf2htmlEX.
 
 recordVar DEBIAN_FRONTEND noninteractive
 
@@ -91,19 +91,19 @@ mkdir -p $PWORKSPACE/$DIST/dpkg
 cp -R pdf2htmlEX/test               $PWORKSPACE/$DIST/dpkg
 cp -R pdf2htmlEX/share              $PWORKSPACE/$DIST/dpkg
 #
-mkdir -p $PWORKSPACE/$DIST/docker
-cp -R pdf2htmlEX/test               $PWORKSPACE/$DIST/docker
-cp -R pdf2htmlEX/share              $PWORKSPACE/$DIST/docker
+mkdir -p $PWORKSPACE/$DIST/container
+cp -R pdf2htmlEX/test               $PWORKSPACE/$DIST/container
+cp -R pdf2htmlEX/share              $PWORKSPACE/$DIST/container
 #
 mkdir -p $PWORKSPACE/$DIST/native
 cp -R pdf2htmlEX/test               $PWORKSPACE/$DIST/native
 cp -R pdf2htmlEX/share              $PWORKSPACE/$DIST/native
 
 # Now we create the release artifacts
-# (starting with those we can put together inside a docker container)
+# (starting with those we can put together inside a podman container)
 #
-recordVar DOCKER_FROM $DOCKER_FROM
-recordVar DOCKER_USERNAME $DOCKER_USERNAME
+recordVar CONTAINER_FROM $CONTAINER_FROM
+recordVar DOCKER_HUB_USERNAME $DOCKER_HUB_USERNAME
 
 acceptResult ./buildScripts/createAppImage  
 acceptResult ./buildScripts/createDebianPackage
@@ -172,21 +172,21 @@ cp -R browser_tests/*.pdf \$BROWSER_TEST_DIR/pdfFiles
 
 reportResults
 
-DOCKER_SCRIPT
+PODMAN_SCRIPT
 
-chmod a+x dockerScript
+chmod a+x podmanScript
 
-devDocker laminar_dev_$DIST ./dockerScript
+devPodman laminar_dev_$DIST ./podmanScript
 
 #######################################################################
-# Now run all build scripts which must be run *outside* of any docker 
+# Now run all build scripts which must be run *outside* of any podman 
 # container.
 #
 
 # In our case, we only have to run:
 #
 cd $LAMINAR_RUNDIR/pdf2htmlEX
-acceptResult ./buildScripts/createDockerUbuntuImageFromDeb
+acceptResult ./buildScripts/createContainerUbuntuImageFromDeb
 
 #########################################################################
 # Now we copy the pdf2htmlex project release/test objects/directories to 

@@ -46,38 +46,38 @@ echo ""
 # release page 
 #
 export appImageNames=/tmp/appImageNames.txt
-export dockerImageNames=/tmp/dockerImageNames.txt
+export containerImageNames=/tmp/containerImageNames.txt
 export archiveNames=/tmp/archiveNames.txt
 export buildInfo=/tmp/buildInfo
 #
 rm -rf $appImageNames
-rm -rf $dockerImageNames
+rm -rf $containerImageNames
 rm -rf $archiveNames
 rm -rf ${buildInfo}*
 #
 touch $appImageNames
-touch $dockerImageNames
+touch $containerImageNames
 touch $archiveNames
 
 ########################################################################
-# Now start releasing the docker images to docker hub 
+# Now start releasing the container images to docker hub 
 #
-if [ -x "$(which docker)" ]; then
+if [ -x "$(which podman)" ]; then
   #
   echo ""
   echo "--------------------------------------------------------------"
-  echo "Releasing Docker images to docker hub:"
+  echo "Releasing OCI Container images to docker hub:"
   echo "--------------------------------------------------------------"
   echo ""
   #
-  if [ -z "$DOCKER_PASSWORD" ]; then
+  if [ -z "$DOCKER_HUB_PASSWORD" ]; then
     echo ""
     echo "Please type your the Docker hub password (empty if already logged in)"
     echo ""
-    docker login -u "$userName"
+    podman login -u "$userName"
     echo ""
   else
-    echo "$DOCKER_PASSWORD" | docker login -u "$userName" --password-stdin
+    echo "$DOCKER_HUB_PASSWORD" | podman login -u "$userName" --password-stdin
     echo ""
   fi
   #
@@ -88,13 +88,13 @@ if [ -x "$(which docker)" ]; then
       echo ""
       echo "---------------------------"
   	  echo "Releasing $aDist"
-  	  echo "$DOCKER_NAME"
-  	  echo $DOCKER_NAME >> $dockerImageNames
-      docker push $DOCKER_NAME
+  	  echo "$DOCKER_HUB_NAME"
+  	  echo $DOCKER_HUB_NAME >> $podmanImageNames
+      podman push $DOCKER_HUB_NAME
     fi
   done
 else
-  echo "Docker is not installed... skipping upload of docker image."
+  echo "Podman is not installed... skipping upload of podman image."
 fi
 
 ########################################################################
@@ -128,26 +128,26 @@ chmod 0600 $HOME/.netrc
 
 # Compute the correct GitHub repository organization/user
 #
-lastDockerUserName=""
+lastDockerHubUserName=""
 for aDist in $releaseDists ; do
   if test -f $PWORKSPACE/$aDist/reSourceVersionEnvs ; then
     source $PWORKSPACE/$aDist/reSourceVersionEnvs
-    if test -n "$lastDockerUserName" ; then
-      if test "$lastDockerUserName" != "$DOCKER_USERNAME" ; then
-        echo "ERRROR: inconsistent DOCKER_USERNAMEs across release distributions"
+    if test -n "$lastDockerHubUserName" ; then
+      if test "$lastDockerHubUserName" != "$DOCKER_HUB_USERNAME" ; then
+        echo "ERRROR: inconsistent DOCKER_HUB_USERNAMEs across release distributions"
         exit -1
       fi
     fi
-    lastDockerUserName="$DOCKER_USERNAME"
+    lastDockerHubUserName="$DOCKER_HUB_USERNAME"
   fi
 done
 #
-if test -z "$lastDockerUserName" ; then
-  echo "ERROR: no DOCKER_USERNAME found"
+if test -z "$lastDockerHubUserName" ; then
+  echo "ERROR: no DOCKER_HUB_USERNAME found"
   exit -1
 fi
 #
-export GITHUB_REPO="$lastDockerUserName/pdf2htmlEX"
+export GITHUB_REPO="$lastDockerHubUserName/pdf2htmlEX"
 
 deleteReleaseByTag "$GITHUB_REPO" "continuous"
 
@@ -193,9 +193,9 @@ echo ""
 
 echo ""
 echo "--------------------------------------------------------------"
-echo $dockerImageNames
+echo $podmanImageNames
 echo "--------------------------------------------------------------"
-cat $dockerImageNames
+cat $podmanImageNames
 echo "--------------------------------------------------------------"
 echo ""
 
@@ -210,9 +210,9 @@ echo ""
 echo ""
 echo "---------------------------"
 uploadAnAsset $upload_url $appImageNames    "text/plain"
-uploadAnAsset $upload_url $dockerImageNames "text/plain"
+uploadAnAsset $upload_url $podmanImageNames "text/plain"
 uploadAnAsset $upload_url $archiveNames     "text/plain"
 
 echo ""
-srm -v $HOME/.netrc $HOME/.docker/config.json
+srm -v $HOME/.netrc $HOME/.config/containers/auth.json
 echo ""

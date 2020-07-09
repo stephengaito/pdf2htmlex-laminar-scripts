@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# This Laminar bash script automates the testing of pdf2htmlEX Docker images
+# This Laminar bash script automates the testing of pdf2htmlEX Podman images
 
 # The `DIST` environment variable is used to specify which Ubuntu release 
 # will be used. (The default is `bionic`).
 
 source setupLaminarVars
 
-# Make sure that $WORKSPACE/$DIST exists BEFORE docker mounts it
+# Make sure that $WORKSPACE/$DIST exists BEFORE podman mounts it
 #
 mkdir -p $PWORKSPACE/$DIST
 
 source $PWORKSPACE/$DIST/reSourceVersionEnvs
 
 
-echo "docker name: [$DOCKER_NAME]"
+echo "docker hub name: [$DOCKER_HUB_NAME]"
 
 recordVar PDF2HTMLEX_TMPDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/tmp
 recordVar PDF2HTMLEX_DATDIR \$LAMINAR_RUNDIR/tmp/pdf2htmlEX/dat
@@ -32,41 +32,41 @@ mkdir -p $PDF2HTMLEX_PREDIR
 mkdir -p $PDF2HTMLEX_HTMDIR
 mkdir -p $PDF2HTMLEX_EXPDIR
 
-recordVar WEBFSD_DIR $PWORKSPACE/html/$DIST/docker
+recordVar WEBFSD_DIR $PWORKSPACE/html/$DIST/container
 mkdir -p $WEBFSD_DIR
 
 # run local tests using only bash and pdf2htmlEX
 #
-cd $PWORKSPACE/$DIST/docker/test
-echo "BASE_DOCKER: [$BASE_DOCKER]"
-recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
-recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+cd $PWORKSPACE/$DIST/container/test
+echo "BASE_PODMAN: [$BASE_PODMAN]"
+recordVar PDF2HTMLEX_PATH "$BASE_PODMAN -v \$PWD:/pdf -v \$PDF2HTMLEX_TMPDIR:\$PDF2HTMLEX_TMPDIR localhost/$CONTAINER_NAME"
+recordVar PDF2HTMLEX_PATH "$BASE_PODMAN -v \$PWD:/pdf -v \$PDF2HTMLEX_TMPDIR:\$PDF2HTMLEX_TMPDIR localhost/$CONTAINER_NAME"
 echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 acceptResult ./runLocalTestsShell
 
 if test -x $PWORKSPACE/$DIST/examples/binFiles/produceHtmlFromPdfFiles ; then
   cd $PWORKSPACE/$DIST/examples
-  echo "BASE_DOCKER: [$BASE_DOCKER]"
+  echo "BASE_PODMAN: [$BASE_PODMAN]"
     # NEED TO modify produceHtmlFromPdfFiles to work in one directory only!
-  recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
-  recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+  recordVar PDF2HTMLEX_PATH "$BASE_PODMAN -v \$PWD:/pdf -v \$PDF2HTMLEX_TMPDIR:\$PDF2HTMLEX_TMPDIR localhost/$CONTAINER_NAME"
+  recordVar PDF2HTMLEX_PATH "$BASE_PODMAN -v \$PWD:/pdf -v \$PDF2HTMLEX_TMPDIR:\$PDF2HTMLEX_TMPDIR localhost/$CONTAINER_NAME"
   echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
   acceptResult ./binFiles/produceHtmlFromPdfFiles
   cp -R $PDF2HTMLEX_EXPDIR $WEBFSD_DIR
 fi
 
-cd $PWORKSPACE/$DIST/docker/test
-echo "BASE_DOCKER: [$BASE_DOCKER]"
-recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
-recordVar PDF2HTMLEX_PATH "$BASE_DOCKER -v \$PWD:/pdf -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX $DOCKER_NAME"
+cd $PWORKSPACE/$DIST/container/test
+echo "BASE_PODMAN: [$BASE_PODMAN]"
+recordVar PDF2HTMLEX_PATH "$BASE_PODMAN -v \$PWD:/pdf -v \$PDF2HTMLEX_TMPDIR:\$PDF2HTMLEX_TMPDIR localhost/$CONTAINER_NAME"
+recordVar PDF2HTMLEX_PATH "$BASE_PODMAN -v \$PWD:/pdf -v \$PDF2HTMLEX_TMPDIR:\$PDF2HTMLEX_TMPDIR localhost/$CONTAINER_NAME"
 echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 acceptResult ./produceHtmlForBrowserTests
 
 ###########################################################################
-# We run the following DOCKER_SCRIPT inside the laminar_dev_focal docker 
+# We run the following PODMAN_SCRIPT inside the laminar_dev_focal podman 
 # image as the dev user. 
 #
-cat  <<DOCKER_SCRIPT > finishLocalBrowserTestsDockerScript
+cat  <<PODMAN_SCRIPT > finishLocalBrowserTestsContainerScript
 #!/bin/bash
 
 source $LAMINAR_RUNDIR/reSourceLaminarVars
@@ -80,7 +80,7 @@ failResult ./installAutomaticTestSoftwareApt
 
 echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 
-cd $PWORKSPACE/$DIST/docker/test
+cd $PWORKSPACE/$DIST/container/test
 
 cp test.py.in test.py
 sed "s|@PDF2HTMLEX_PATH@|/bin/true|"             -i test.py
@@ -101,16 +101,15 @@ cp -R browser_tests/*.pdf \$BROWSER_TEST_DIR/pdfFiles
 
 reportResults
 
-DOCKER_SCRIPT
+PODMAN_SCRIPT
 
-chmod a+x finishLocalBrowserTestsDockerScript
+chmod a+x finishLocalBrowserTestsContainerScript
 
 # Since we are testing the html generated which has already been generated 
-# by an Alpine base Docker image... we *can* run the final python3 diffing 
-# inside an Ubuntu Focal based docker image... 
+# by an Alpine base Podman image... we *can* run the final python3 diffing 
+# inside an Ubuntu Focal based podman image... 
 #
-devDocker -v /tmp/pdf2htmlEX:/tmp/pdf2htmlEX \
-  laminar_dev_focal                          \
-  ./finishLocalBrowserTestsDockerScript
+devPodman -v $PDF2HTMLEX_TMPDIR:$PDF2HTMLEX_TMPDIR           \
+  laminar_dev_focal ./finishLocalBrowserTestsContainerScript
 
 reportResults

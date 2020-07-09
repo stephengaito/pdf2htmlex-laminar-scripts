@@ -7,22 +7,22 @@
 
 source setupLaminarVars
 
-# Make sure that $WORKSPACE/$DIST exists BEFORE docker mounts it
+# Make sure that $WORKSPACE/$DIST exists BEFORE podman mounts it
 #
 mkdir -p $PWORKSPACE/$DIST
 
 source $PWORKSPACE/$DIST/reSourceVersionEnvs
 
 ###########################################################################
-# We run the following DOCKER_SCRIPT inside the laminar_dev_$DIST docker 
+# We run the following PODMAN_SCRIPT inside the laminar_dev_$DIST podman 
 # image as the dev user. 
 #
-cat <<DOCKER_SCRIPT > dockerScript
+cat <<PODMAN_SCRIPT > podmanScript
 #!/bin/bash
 
 source $LAMINAR_RUNDIR/reSourceLaminarVars
 
-# This bash script is used *inside* a docker image to test the AppImage 
+# This bash script is used *inside* a podman image to test the AppImage 
 # version of pdf2htmlEX. 
 
 # We need to install all packages that the pdf2htmlEX AppImage assumes 
@@ -42,7 +42,7 @@ sudo apt -y install libx11-6
 
 cd $LAMINAR_RUNDIR
 
-# Now (since we are running *inside* a docker container which can't use 
+# Now (since we are running *inside* a podman container which can't use 
 # FUSE) we need to manually extract the AppImage's contents...
 #
 $PWORKSPACE/$DIST/$APPIMAGE_NAME --appimage-extract
@@ -107,8 +107,8 @@ cp -R browser_tests/*.pdf \$BROWSER_TEST_DIR/pdfFiles
 
 reportResults
 
-DOCKER_SCRIPT
+PODMAN_SCRIPT
 
-chmod a+x dockerScript
+chmod a+x podmanScript
 
-devDocker laminar_dev_$DIST ./dockerScript
+devPodman laminar_dev_$DIST ./podmanScript

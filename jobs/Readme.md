@@ -8,7 +8,7 @@ command at the end of a successful build job.
   `REPO` and `PDF2HTMLEX_BRANCH` environment variables are set.
 
 - `pdf2htmlex-build.run` acutally builds, installs and creates an 
-  AppImage, Debian archive and a Docker image. 
+  AppImage, Debian archive and a Container image. 
 
   The `DIST` environment variable is used to control which Ubuntu 
   distribution is used to build pdf2htmlEX. 
@@ -17,18 +17,18 @@ command at the end of a successful build job.
   `pdf2htmlEX`. 
 
 - `pdf2htmlex-test.run` tests all pdf2htmlEX release objects (AppImage, 
-  Debian Archive, Docker image). 
+  Debian Archive, Container image). 
 
 - `pdf2htmlex-testAppImage.run` tests the pdf2htmlEX AppImage. 
 
 - `pdf2htmlex-testDpkg.run` tests the pdf2htmlEX Debian archive. 
 
-- `pdf2htmlex-testDocker.run` tests the pdf2htmlEX Docker image. 
+- `pdf2htmlex-testContainer.run` tests the pdf2htmlEX Container image. 
 
 ## Testing
 
 We want to run three types of tests on each of the originally compiled 
-pdf2htmlEX, as well as the AppImage, Debian archive and Docker image 
+pdf2htmlEX, as well as the AppImage, Debian archive and Container image 
 versions. 
 
 1. pdf2htmlEX/tests/test_output.py (simple tests to determine that the 
@@ -63,30 +63,17 @@ potentially the *same* time?
 ## Notes:
 
 Most of the bash scripts which these Laminar jobs run, are run inside one 
-or other specifically controled docker image. This allows us to have 
+or other specifically controled OCI container. This allows us to have 
 tighter control over the installed environment in which the build script 
 runs, compiles, and packages an artifact. 
 
-Some of these scripts, for example the pdf2htmlEX build script, 
-`createDockerImage` which creates the docker image, themselves run docker 
-commands. 
-
-It would be nice to be able to use the [docker-out-of-docker 
-pattern](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/) 
-to ensure that docker commands can be called inside a docker container. 
-
-Unfortunately this *will not work* if docker is running with the [Linux 
-namespaces 
-opton](https://docs-stage.docker.com/engine/security/userns-remap/) on
-(Which is how I run docker on my machines). 
-
-To get around this, any pdf2htmlEX build script which requires the use of 
-a docker command, should be split into two parts. One part which *can* be 
-run *inside* a docker container, and the other part which "finishes" the 
-action by calling the docker command from *outside* of any docker 
+At the moment, any pdf2htmlEX build script which requires the use of a 
+container command, should be split into two parts. One part which *can* be 
+run *inside* an OCI container, and the other part which "finishes" the 
+action by calling the container command from *outside* of any OCI 
 container. 
 
-The pdf2htmlEX build script which creates the docker image is structured 
-as two parts. One part to be run in the compile environment inside a 
-docker container, and the other part, to finish the creation of the docker 
-image, to be run outside of any docker container. 
+The pdf2htmlEX build script which creates the container image is 
+structured as two parts. One part to be run in the compile environment 
+inside an OCI container, and the other part, to finish the creation of the 
+container, to be run outside of any OCI container. 

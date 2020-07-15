@@ -60,8 +60,8 @@ if test -r $LAMINAR_HOME/cfg/tarArchives/pdf2htmlEX-examples.tar.gz ; then
 fi
   
 ###########################################################################
-# Now do the build INSIDE inside a laminar_dev_$DIST podman image as the 
-# dev user. 
+# Now do the build INSIDE inside a laminar_$DIST podman image as the 
+# root user. 
 #
 # Explicitly mount /etc/localtime to keep focal's configuration of tzdata 
 # happy ;-( 
@@ -107,13 +107,6 @@ recordVar DOCKER_HUB_USERNAME $DOCKER_HUB_USERNAME
 
 acceptResult ./buildScripts/createAppImage  
 acceptResult ./buildScripts/createDebianPackage
-
-# Make sure that Laminar (run as dev) can eventually clean up...
-# (the debian packaging chown to "root")
-#
-cd $LAMINAR_RUNDIR
-#
-sudo chown -R dev:dev $LAMINAR_RUNDIR
 
 # Now we want to run the native tests (we do this AFTER creating the 
 # artifacts so we do not polute the installed packages). 
@@ -176,7 +169,7 @@ PODMAN_SCRIPT
 
 chmod a+x podmanScript
 
-devPodman laminar_dev_$DIST ./podmanScript
+rootPodman laminar_$DIST ./podmanScript
 
 #######################################################################
 # Now run all build scripts which must be run *outside* of any podman 

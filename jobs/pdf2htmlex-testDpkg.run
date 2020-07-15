@@ -14,8 +14,8 @@ mkdir -p $PWORKSPACE/$DIST
 source $PWORKSPACE/$DIST/reSourceVersionEnvs
 
 ###########################################################################
-# We run the following PODMAN_SCRIPT inside the laminar_dev_$DIST podman 
-# image as the dev user. 
+# We run the following PODMAN_SCRIPT inside the laminar_$DIST podman 
+# image as the root user. 
 #
 cat <<PODMAN_SCRIPT > podmanScript
 #!/bin/bash
@@ -97,4 +97,4 @@ PODMAN_SCRIPT
 
 chmod a+x podmanScript
 
-devPodman laminar_dev_$DIST ./podmanScript
+rootPodman laminar_$DIST ./podmanScript

@@ -63,8 +63,8 @@ echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 acceptResult ./produceHtmlForBrowserTests
 
 ###########################################################################
-# We run the following PODMAN_SCRIPT inside the laminar_dev_focal podman 
-# image as the dev user. 
+# We run the following PODMAN_SCRIPT inside the laminar_focal podman 
+# image as the root user. 
 #
 cat  <<PODMAN_SCRIPT > finishLocalBrowserTestsContainerScript
 #!/bin/bash
@@ -109,7 +109,7 @@ chmod a+x finishLocalBrowserTestsContainerScript
 # by an Alpine base Podman image... we *can* run the final python3 diffing 
 # inside an Ubuntu Focal based podman image... 
 #
-devPodman -v $PDF2HTMLEX_TMPDIR:$PDF2HTMLEX_TMPDIR           \
-  laminar_dev_focal ./finishLocalBrowserTestsContainerScript
+rootPodman -v $PDF2HTMLEX_TMPDIR:$PDF2HTMLEX_TMPDIR      \
+  laminar_focal ./finishLocalBrowserTestsContainerScript
 
 reportResults

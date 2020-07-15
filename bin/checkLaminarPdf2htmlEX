@@ -8,7 +8,7 @@ function getALog {
   runNumber=$2
 
   echo "downloading pdf2htmlex-$runPartName / $runNumber "
-  wget -q http://172.17.0.1:8888/log/pdf2htmlex-${runPartName}/${runNumber} \
+  wget -q http://127.0.0.1:8888/log/pdf2htmlex-${runPartName}/${runNumber} \
     -O $logDir/pdf2htmlex-${runPartName}-${runNumber}.log
 }
 
@@ -286,7 +286,7 @@ fi
 
 maxJobNumber=$1
 
-logDir=$HOME/laminar/tasks/logs
+logDir=$HOME/tasks/logs
 
 # start by clearing out any existing log files
 #

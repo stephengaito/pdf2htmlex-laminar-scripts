@@ -64,8 +64,8 @@ echo "PDF2HTMLEX_PATH: [$PDF2HTMLEX_PATH]"
 acceptResult ./produceHtmlForBrowserTests
 
 ###########################################################################
-# We run the following PODMAN_SCRIPT inside the laminar_dev_$DIST podman 
-# image as the dev user. 
+# We run the following PODMAN_SCRIPT inside the laminar_$DIST podman 
+# image as the root user. 
 #
 cat  <<PODMAN_SCRIPT > podmanScript
 #!/bin/bash
@@ -106,7 +106,8 @@ PODMAN_SCRIPT
 
 chmod a+x podmanScript
 
-devPodman -v $PDF2HTMLEX_TMPDIR:$PDF2HTMLEX_TMPDIR \
-  laminar_dev_$DIST ./podmanScript
+rootPodman                                 \
+  -v $PDF2HTMLEX_TMPDIR:$PDF2HTMLEX_TMPDIR \
+  laminar_$DIST ./podmanScript
 
 reportResults

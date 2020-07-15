@@ -63,8 +63,8 @@ if test -r $LAMINAR_HOME/cfg/tarArchives/pdf2htmlEX-examples.tar.gz ; then
 fi
   
 ###########################################################################
-# Now do the build INSIDE inside a laminar_dev_$DIST podman image as the 
-# dev user. 
+# Now do the build INSIDE inside a laminar_$DIST podman image as the 
+# root user. 
 #
 # Explicitly mount /etc/localtime to keep focal's configuration of tzdata 
 # happy ;-( 
@@ -102,13 +102,6 @@ recordVar CONTAINER_FROM $CONTAINER_FROM
 recordVar DOCKER_HUB_USERNAME $DOCKER_HUB_USERNAME
 
 failResult ./buildScripts/createAlpineTarFile
-
-# Make sure that Laminar (run as dev) can eventually clean up...
-# (the debian packaging chown to "root")
-#
-cd $LAMINAR_RUNDIR
-#
-sudo chown -R dev:dev $LAMINAR_RUNDIR
 
 # Now we want to run the native tests (we do this AFTER creating the 
 # artifacts so we do not polute the installed packages). 
@@ -159,7 +152,7 @@ PODMAN_SCRIPT
 
 chmod a+x podmanScript
 
-devPodman laminar_dev_$DIST ./podmanScript
+rootPodman laminar_$DIST ./podmanScript
 
 #######################################################################
 # Now run all build scripts which must be run *outside* of any podman 
@@ -172,8 +165,8 @@ cd $LAMINAR_RUNDIR/pdf2htmlEX
 acceptResult ./buildScripts/createContainerAlpineImageFromTarFile
 
 ###########################################################################
-# We run the following PODMAN_SCRIPT inside the laminar_dev_focal podman 
-# image as the dev user. 
+# We run the following PODMAN_SCRIPT inside the laminar_focal podman 
+# image as the root user. 
 #
 cat  <<PODMAN_SCRIPT > finishLocalBrowserTestsContainerScript
 #!/bin/bash
@@ -218,9 +211,9 @@ chmod a+x finishLocalBrowserTestsContainerScript
 # by an Alpine base Container image... we *can* run the final python3 diffing 
 # inside an Ubuntu Focal based podman image... 
 #
-devPodman                                                                  \
+rootPodman                                                                 \
   -v $LAMINAR_RUNDIR/tmp/pdf2htmlEX/tmp:$LAMINAR_RUNDIR/tmp/pdf2htmlEX/tmp \
-  laminar_dev_focal ./finishLocalBrowserTestsContainerScript
+  laminar_focal ./finishLocalBrowserTestsContainerScript
 
 #########################################################################
 # Now we copy the pdf2htmlex project release/test objects/directories to 

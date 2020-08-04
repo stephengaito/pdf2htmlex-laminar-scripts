@@ -40,9 +40,9 @@ fi
 
 sleep 1
 
-DIST=eoan
+DIST=focal
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
-  laminarc queue pdf2htmlex-testUbuntu          \
+  laminarc queue pdf2htmlex-testUbunutu         \
     DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 else
@@ -53,13 +53,16 @@ fi
 
 sleep 1
 
-DIST=focal
+# Now build the Federa version
+#
+DIST=32
 if test -f $PWORKSPACE/$DIST/reSourceVersionEnvs ; then
-  laminarc queue pdf2htmlex-testUbunutu         \
-    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
-    PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
+  echo "Nothing to do!"
+#  laminarc queue pdf2htmlex-testContainerFedora    \
+#    DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
+#    PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 else
-  laminarc queue pdf2htmlex-buildUbuntu         \
+  laminarc queue pdf2htmlex-buildFedora         \
     DIST=$DIST DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME \
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 fi

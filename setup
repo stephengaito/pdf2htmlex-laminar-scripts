@@ -2,6 +2,16 @@
 
 # This bash script installs the pdf2htmlEX laminar job scripts
 
+if test $# -ne 1 ; then
+  echo "usage: setup <kvmOrPodman>"
+  echo ""
+  echo "  kvmOrPodman you MUST choose on or the other of 'kvm' or 'podman'"
+  echo ""
+  exit -1
+fi
+
+jobType=$1
+
 source ../laminar-scripts/laminar.conf
 
 binDir=$HOME/bin
@@ -11,12 +21,12 @@ jobDir=$LAMINAR_HOME/cfg/jobs
 tarDir=$LAMINAR_HOME/cfg/tarArchives
 mkdir -p $tarDir
 
-cp bin/startLaminar*  $binDir
+cp bin/startLaminar*           $binDir
 
-cp bin/checkLaminar*   $binDir
+cp bin/checkLaminar*           $binDir
 
-cp bin/uploadLaminar*  $binDir
+cp bin/uploadLaminar*          $binDir
 
-cp jobs/pdf2htmlex*    $jobDir
+cp jobs/${jobType}/pdf2htmlex* $jobDir
 
 cp tarArchives/pdf2htmlEX-examples-*.tar.gz $tarDir/pdf2htmlEX-examples.tar.gz

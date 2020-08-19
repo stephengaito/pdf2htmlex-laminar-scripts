@@ -51,8 +51,6 @@ else
     PDF2HTMLEX_BRANCH=$PDF2HTMLEX_BRANCH
 fi
 
-exit 0
-
 sleep 1
 
 # Now build the Federa version

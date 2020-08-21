@@ -2,7 +2,7 @@
 
 # This Laminar bash script uploads the current release artifacts.
 
-PWORKSPACE=$HOME/laminar/tasks/workspaces/pdf2htmlex
+PWORKSPACE=$HOME/tasks/workspaces/pdf2htmlex
 userName=$1
 shift
 releaseDists=$*
@@ -19,7 +19,7 @@ if test -z "$userName" ; then
 fi
 
 if test -z "$releaseDists" ; then
-  releaseDists="bionic eoan focal 3.12"
+  releaseDists="bionic focal 3.12"
 fi
 
 echo ""
@@ -31,7 +31,7 @@ echo ""
 read -p "Continue by editing uploadLaminarGitHubReleaseMessage? " answer
 echo ""
 
-nano $HOME/bin/uploadLaminarGitHubReleaseMessage
+micro $HOME/bin/uploadLaminarGitHubReleaseMessage
 
 echo ""
 echo "^C to abort"
@@ -88,9 +88,9 @@ if [ -x "$(which podman)" ]; then
       echo ""
       echo "---------------------------"
   	  echo "Releasing $aDist"
-  	  echo "$DOCKER_HUB_NAME"
-  	  echo $DOCKER_HUB_NAME >> $podmanImageNames
-      podman push $DOCKER_HUB_NAME
+      echo "$CONTAINER_NAME"
+      echo $CONTAINER_NAME >> $containerImageNames
+      podman push $CONTAINER_NAME
     fi
   done
 else
@@ -157,7 +157,7 @@ createNewRelease   "$GITHUB_REPO" "continuous" "Latest release" \
 for aDist in $releaseDists ; do
   if test -d $PWORKSPACE/$aDist ; then
     source $PWORKSPACE/$aDist/reSourceVersionEnvs
-    if test "$BUILD_OS" = "Ubuntu" ; then
+    if test "$BUILD_OS" = "ubuntu" ; then
       echo ""
       echo "---------------------------"
       echo "Releasing Ubuntu $aDist"
@@ -193,9 +193,9 @@ echo ""
 
 echo ""
 echo "--------------------------------------------------------------"
-echo $podmanImageNames
+echo $containerImageNames
 echo "--------------------------------------------------------------"
-cat $podmanImageNames
+cat $containerImageNames
 echo "--------------------------------------------------------------"
 echo ""
 
@@ -209,9 +209,9 @@ echo ""
 
 echo ""
 echo "---------------------------"
-uploadAnAsset $upload_url $appImageNames    "text/plain"
-uploadAnAsset $upload_url $podmanImageNames "text/plain"
-uploadAnAsset $upload_url $archiveNames     "text/plain"
+uploadAnAsset $upload_url $appImageNames       "text/plain"
+uploadAnAsset $upload_url $containerImageNames "text/plain"
+uploadAnAsset $upload_url $archiveNames        "text/plain"
 
 echo ""
 srm -v $HOME/.netrc $HOME/.config/containers/auth.json
